@@ -1,0 +1,14 @@
+gtfs.zip baixado de https://www.granderecife.pe.gov.br/gtfs/gtfs.zip
+
+agency.txt -> agências servidas pelo transitland
+calendar_dates.txt -> datas de funcionamento e exceções (deve ser frota diminuida ou não) pra cada service_id
+calendar.txt
+fare_attributes.txt
+fare_rules.txt
+feed_info.txt
+routes.txt
+shapes.txt
+stops.txt
+stop_times.txt
+transfers.txt
+trips.txt -> relações entre chaves primarias
