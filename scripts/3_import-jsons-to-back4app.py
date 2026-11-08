@@ -10,6 +10,7 @@ headers = {
     'Content-Type': 'application/json',
 }
 
+
 def importar_json_back4app(json_path, class_name):
     url = f"https://parseapi.back4app.com/classes/{class_name}"
 
