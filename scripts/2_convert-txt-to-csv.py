@@ -16,23 +16,23 @@ def csv_to_json(csv_path, json_path):
 
 
 csv_paths = [
-    './gtfs/routes.txt',
-    './gtfs/stops.txt',
-    './gtfs/stop_times.txt',
-    './gtfs/shapes.txt',
-    './gtfs/trips.txt',
-    './gtfs/calendar.txt',
-    './gtfs/calendar_dates.txt',
+    '../relevant-entries/routes.txt',
+    '../relevant-entries/stops.txt',
+    '../relevant-entries/stop_times.txt',
+    '../relevant-entries/shapes.txt',
+    '../relevant-entries/trips.txt',
+    '../relevant-entries/calendar.txt',
+    '../relevant-entries/calendar_dates.txt',
 ]
 
 json_paths = [
-    './jsons/routes.json',
-    './jsons/stops.json',
-    './jsons/stop_times.json',
-    './jsons/shapes.json',
-    './jsons/trips.json',
-    './jsons/calendar.json',
-    './jsons/calendar_dates.json',
+    '../jsons/routes.json',
+    '../jsons/stops.json',
+    '../jsons/stop_times.json',
+    '../jsons/shapes.json',
+    '../jsons/trips.json',
+    '../jsons/calendar.json',
+    '../jsons/calendar_dates.json',
 ]
 
 for csv_path, json_path in zip(csv_paths, json_paths):
