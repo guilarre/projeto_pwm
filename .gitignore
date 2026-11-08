@@ -1,5 +1,6 @@
-jsons/*.*
-gtfs/*.*
-relevant-entries/*.*
+data/jsons/*.*
+data/gtfs/*.*
+data/relevant-entries/*.*
 todo.*
 test.*
+api_transitland.txt

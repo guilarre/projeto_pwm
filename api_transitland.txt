@@ -1,9 +1,0 @@
-example:
-https://transit.land/api/v2/rest/SERVICE_U_WANT?apikey=YOUR_API_KEY
-
-gtfs feed versions (archive):
-https://transit.land/api/v2/rest/feed_versions/237561f8bb0a7ea9d13c2f8f790437e566b8f49d/download
-
-pra baixar:
-curl "https://transit.land/api/v2/rest/feed_versions/237561f8bb0a7ea9d13c2f8f790437e566b8f49d/download" \
-  -H "apikey: iwa_live_tlv2api_ff5b9297b30b4c8fe0fe99faf6e95a69b4a6b2479b8d58d12IXypy"
