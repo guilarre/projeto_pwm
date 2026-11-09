@@ -1,98 +1,160 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
+import { Stack, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+export default function LoginScreen() {
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const router = useRouter();
+
+  const handleLogin = () => {
+    router.replace('/home');
+  };
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <View style={styles.externalContainer}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
+      {/* Moldura idêntica à da Home */}
+      <View style={styles.phoneFrame}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.content}>
+            <View style={styles.logoContainer}>
+              <View style={styles.iconCircle}>
+                <Ionicons name="bus" size={40} color="#27ae60" />
+              </View>
+              <ThemedText style={styles.appName}>BusRecife</ThemedText>
+              <ThemedText style={styles.appSubtitle}>Monitoramento em tempo real</ThemedText>
+            </View>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+            <View style={styles.formContainer}>
+              <View style={styles.inputGroup}>
+                <ThemedText style={styles.label}>E-mail</ThemedText>
+                <TextInput
+                  style={styles.input}
+                  placeholder="seu.email@exemplo.com"
+                  placeholderTextColor="#888"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+              </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+              <View style={styles.inputGroup}>
+                <ThemedText style={styles.label}>Senha</ThemedText>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Sua senha"
+                  placeholderTextColor="#888"
+                  value={senha}
+                  onChangeText={setSenha}
+                  secureTextEntry
+                />
+              </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+              <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+                <ThemedText style={styles.loginButtonText}>Entrar</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+  externalContainer: { 
+    flex: 1, 
+    backgroundColor: '#1a1a1a', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    paddingVertical: 20 
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+  phoneFrame: { 
+    width: '100%', 
+    maxWidth: 420, 
+    height: '100%', 
+    maxHeight: 850, 
+    backgroundColor: '#f8f9fa', 
+    borderRadius: 24, 
+    overflow: 'hidden', 
+    elevation: 10 
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  safeArea: { 
+    flex: 1 
   },
-  title: {
-    textAlign: 'center',
+  content: { 
+    flex: 1, 
+    paddingHorizontal: 24, 
+    justifyContent: 'center', 
+    width: '100%', 
+    alignSelf: 'center' 
   },
-  code: {
-    textTransform: 'uppercase',
+  logoContainer: { 
+    alignItems: 'center', 
+    marginBottom: 40, 
+    gap: 8 
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  iconCircle: { 
+    width: 80, 
+    height: 80, 
+    borderRadius: 40, 
+    backgroundColor: 'rgba(39, 174, 96, 0.15)', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginBottom: 8 
   },
+  appName: { 
+    fontSize: 28, 
+    fontWeight: 'bold', 
+    color: '#111' 
+  },
+  appSubtitle: { 
+    fontSize: 14, 
+    color: '#666' 
+  },
+  formContainer: { 
+    gap: 20 
+  },
+  inputGroup: { 
+    gap: 8 
+  },
+  label: { 
+    fontSize: 14, 
+    fontWeight: '600', 
+    color: '#333' 
+  },
+  input: { 
+    height: 50, 
+    backgroundColor: '#ffffff', 
+    borderRadius: 12, 
+    paddingHorizontal: 16, 
+    fontSize: 15, 
+    color: '#333', 
+    borderWidth: 1, 
+    borderColor: '#e1e8ed' 
+  },
+  loginButton: { 
+    height: 50, 
+    backgroundColor: '#27ae60', 
+    borderRadius: 12, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginTop: 10, 
+    shadowColor: '#27ae60', 
+    shadowOffset: { width: 0, height: 4 }, 
+    shadowOpacity: 0.2, 
+    shadowRadius: 8, 
+    elevation: 3 
+  },
+  loginButtonText: { 
+    color: '#ffffff', 
+    fontSize: 16, 
+    fontWeight: 'bold' 
+  }
 });
