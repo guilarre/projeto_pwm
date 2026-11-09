@@ -5,7 +5,8 @@ import MapView, { Marker, Region } from 'react-native-maps';
 const APP_ID = process.env.EXPO_PUBLIC_BACK4APP_APP_ID;
 const REST_KEY = process.env.EXPO_PUBLIC_BACK4APP_APP_REST_KEY;
 // limite mínimo de 600m em graus de latitude (600m / 111111m =~ 0.0054)
-const MAX_LATITUDE_DELTA = 0.0054;
+// const MAX_LATITUDE_DELTA = 0.0054;
+const MAX_LATITUDE_DELTA = 0.054;
 
 interface Stop {
     objectId: string;
