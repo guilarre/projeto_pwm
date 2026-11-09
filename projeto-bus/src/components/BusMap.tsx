@@ -3,17 +3,16 @@ import { StyleSheet, View, ActivityIndicator, Text, Image } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
 
 const APP_ID = process.env.EXPO_PUBLIC_BACK4APP_APP_ID;
-const REST_KEY = process.env.EXPO_PUBLIC_BACK4APP_APP_REST_KEY;
+const REST_KEY = process.env.EXPO_PUBLIC_BACK4APP_REST_KEY;
 // limite mínimo de 600m em graus de latitude (600m / 111111m =~ 0.0054)
-// const MAX_LATITUDE_DELTA = 0.0054;
-const MAX_LATITUDE_DELTA = 0.054;
+const MAX_LATITUDE_DELTA = 0.0054;
 
 interface Stop {
     objectId: string;
     stop_id: string;
     stop_name: string;
-    stop_lat: string;
-    stop_lon: string;
+    lat: number;
+    lon: number;
 }
 
 export function BusMap() {
@@ -39,15 +38,15 @@ export function BusMap() {
         setLoading(true);
 
         // 1. Calcula a área visível no mapa
-        const minLat = (region.latitude - region.latitudeDelta / 2).toString();
-        const maxLat = (region.latitude + region.latitudeDelta / 2).toString();
-        const minLon = (region.longitude - region.longitudeDelta / 2).toString();
-        const maxLon = (region.longitude + region.longitudeDelta / 2).toString();
+        const minLat = (region.latitude - region.latitudeDelta / 2);
+        const maxLat = (region.latitude + region.latitudeDelta / 2);
+        const minLon = (region.longitude - region.longitudeDelta / 2);
+        const maxLon = (region.longitude + region.longitudeDelta / 2);
 
         // 2. Monta a query para buscar apenas as paradas dentro desse retângulo no Back4App
         const whereQuery = {
-            stop_lat: { $gte: minLat, $lte: maxLat },
-            stop_lon: { $gte: minLon, $lte: maxLon },
+            lat: { $gte: minLat, $lte: maxLat },
+            lon: { $gte: minLon, $lte: maxLon },
         };
 
         try {
@@ -65,6 +64,7 @@ export function BusMap() {
             const data = await response.json();
             if (data.results) {
                 setStops(data.results);
+                console.log(data.results);
             }
         } catch (error) {
             console.error('Erro ao buscar paradas da região:', error);
@@ -81,8 +81,8 @@ export function BusMap() {
                 onRegionChangeComplete={handleRegionChangeComplete}
             >
                 {stops.map((stop) => {
-                    const latitude = Number(stop.stop_lat);
-                    const longitude = Number(stop.stop_lon);
+                    const latitude = Number(stop.lat);
+                    const longitude = Number(stop.lon);
 
                     if (isNaN(latitude) || isNaN(longitude)) return null;
 

@@ -3,23 +3,29 @@ import { View, Button, Alert, ActivityIndicator } from 'react-native';
 import { Region } from 'react-native-maps';
 
 const APP_ID = process.env.EXPO_PUBLIC_BACK4APP_APP_ID;
-const REST_KEY = process.env.EXPO_PUBLIC_BACK4APP_APP_REST_KEY;
+const REST_KEY = process.env.EXPO_PUBLIC_BACK4APP_REST_KEY;
 
 export default function TestQueriesBack4App() {
     const [loading, setLoading] = useState(false);
 
-    const initialRegion: Region = { // Recife
-        latitude: -8.0476,
-        longitude: -34.8770,
-        latitudeDelta: 0.02,
-        longitudeDelta: 0.02,
-    };
+    // const initialRegion: Region = { // Recife
+    //     latitude: -8.0476,
+    //     longitude: -34.8770,
+    //     latitudeDelta: 0.02,
+    //     longitudeDelta: 0.02,
+    // };
 
     const testConn = async () => {
         setLoading(true);
+
+        const minLat = -7.89;
+        const maxLat = -7.87;
+        const minLon = -34.85;
+        const maxLon = -34.82;
+
         const whereQuery = {
-            stop_lat: { $gte: initialRegion.latitude, $lte: initialRegion.latitude+0.1 },
-            stop_lon: { $gte: initialRegion.longitude, $lte: initialRegion.longitude+0.1 },
+            lat: { $gte: minLat, $lte: maxLat },
+            lon: { $gte: minLon, $lte: maxLon },
         };
 
         try {
