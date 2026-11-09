@@ -4,3 +4,51 @@ data/relevant-entries/*.*
 todo.*
 test.*
 api_transitland.txt
+projeto-bus/.env
+
+# OS QUE VIERAM DO EXPO:
+
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+projeto-bus/node_modules/
+
+# Expo
+projeto-bus/.expo/
+projeto-bus/dist/
+projeto-bus/web-build/
+projeto-bus/expo-env.d.ts
+
+# Native
+projeto-bus/.kotlin/
+projeto-bus/*.orig.*
+projeto-bus/*.jks
+projeto-bus/*.p8
+projeto-bus/*.p12
+projeto-bus/*.key
+projeto-bus/*.mobileprovision
+
+# Metro
+projeto-bus/.metro-health-check*
+
+# debug
+projeto-bus/npm-debug.*
+projeto-bus/yarn-debug.*
+projeto-bus/yarn-error.*
+
+# macOS
+projeto-bus/.DS_Store
+projeto-bus/*.pem
+
+# local env files
+projeto-bus/.env*.local
+
+# typescript
+projeto-bus/*.tsbuildinfo
+
+projeto-bus/example
+
+# generated native folders
+projeto-bus/ios
+projeto-bus/android
+
