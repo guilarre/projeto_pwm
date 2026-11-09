@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, ActivityIndicator, Text } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, Text, Image } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
 
 const APP_ID = process.env.EXPO_PUBLIC_BACK4APP_APP_ID;
@@ -91,7 +91,13 @@ export function BusMap() {
                             coordinate={{ latitude, longitude }}
                             title={stop.stop_name}
                             description={`ID: ${stop.stop_id}`}
-                        />
+                        >
+                            <Image
+                                source={require('../../assets/figma.icons/bus-stop.png')}
+                                style={{ width: 44, height: 52 }}
+                                resizeMode="contain"
+                            />
+                        </Marker>
                     );
                 })}
             </MapView>
