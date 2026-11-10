@@ -92,7 +92,7 @@ export function BusMap() {
                             key={stop.objectId}
                             coordinate={{ latitude, longitude }}
                             onPress={(e) => {
-                                e.stopPropagation();
+                                e.stopPropagation(); //evita comportamento padrão do mapa
                                 router.push({
                                     pathname: `/stop/${stop.objectId}`,
                                     params: {
