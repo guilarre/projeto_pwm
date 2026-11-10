@@ -20,7 +20,7 @@ export function BusMap() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    // Região inicial centralizada em Recife
+    // Região inicial centralizada em Bairro Novo (Olinda)
     const initialRegion: Region = {
         latitude: -8.000402,
         longitude: -34.839964,
