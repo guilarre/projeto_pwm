@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, ActivityIndicator, Text, Image } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
+import { useRouter } from 'expo-router';
+import { BACK4APP_CONFIG } from '@/config/back4app';
 
-const APP_ID = process.env.EXPO_PUBLIC_BACK4APP_APP_ID;
-const REST_KEY = process.env.EXPO_PUBLIC_BACK4APP_REST_KEY;
-// limite mínimo de 600m em graus de latitude (600m / 111111m =~ 0.0054)
-const MAX_LATITUDE_DELTA = 0.0054;
+// limite mínimo de 1km em graus de latitude (1000m / 111111m =~ 0.009)
+const MAX_LATITUDE_DELTA = 0.009;
 
 interface Stop {
     objectId: string;
@@ -18,11 +18,12 @@ interface Stop {
 export function BusMap() {
     const [stops, setStops] = useState<Stop[]>([]);
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
-    // Região inicial centralizada em Recife
+    // Região inicial centralizada em Bairro Novo (Olinda)
     const initialRegion: Region = {
-        latitude: -8.0476,
-        longitude: -34.8770,
+        latitude: -8.000402,
+        longitude: -34.839964,
         latitudeDelta: 0.02,
         longitudeDelta: 0.02,
     };
@@ -50,14 +51,14 @@ export function BusMap() {
         };
 
         try {
-            const url = `https://parseapi.back4app.com/classes/Stops?where=${encodeURIComponent(
+            const url = `${BACK4APP_CONFIG.baseUrl}/classes/Stops?where=${encodeURIComponent(
                 JSON.stringify(whereQuery)
             )}&limit=100`;
 
             const response = await fetch(url, {
                 headers: {
-                    'X-Parse-Application-Id': `${APP_ID}`,
-                    'X-Parse-REST-API-Key': `${REST_KEY}`,
+                    'X-Parse-Application-Id': `${BACK4APP_CONFIG.appId}`,
+                    'X-Parse-REST-API-Key': `${BACK4APP_CONFIG.restKey}`,
                 },
             });
 
@@ -90,8 +91,16 @@ export function BusMap() {
                         <Marker
                             key={stop.objectId}
                             coordinate={{ latitude, longitude }}
-                            title={stop.stop_name}
-                            description={`ID: ${stop.stop_id}`}
+                            onPress={(e) => {
+                                e.stopPropagation(); //evita comportamento padrão do mapa
+                                router.push({
+                                    pathname: `/stop/${stop.objectId}`,
+                                    params: {
+                                        name: stop.stop_name,
+                                        stopId: stop.stop_id
+                                    }
+                                });
+                            }}
                         >
                             <Image
                                 source={require('../../assets/figma.icons/bus-stop.png')}

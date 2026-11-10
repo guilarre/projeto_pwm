@@ -1,0 +1,149 @@
+guilherme-larre  …/projeto-final-pwm/scripts   gui/mapa ✘!?  via 🐍   15:08  $ python 5_stop-addresses.py 
+Iniciando o processamento de 756 paradas...
+[1/756] Stop_id 010001: Parada 01, Avenida Herculano Bandeira, Jardim Beira Rio, Pina, Recife, Pernambuco, Região Nordeste, 51110-130, Brasil
+[2/756] Stop_id 010002: 444, Avenida Herculano Bandeira, Pina, Recife, Pernambuco, Região Nordeste, 51110-130, Brasil
+[3/756] Stop_id 010003: 228, Avenida Engenheiro Domingos Ferreira, Pina, Recife, Pernambuco, Região Nordeste, 51011-050, Brasil
+[4/756] Stop_id 010004: Parada 04, Avenida Engenheiro Domingos Ferreira, Pina, Recife, Pernambuco, Região Nordeste, 51011-050, Brasil
+[5/756] Stop_id 010005: Parada 05, Avenida Engenheiro Domingos Ferreira, Pina, Recife, Pernambuco, Região Nordeste, 51011-050, Brasil
+[6/756] Stop_id 010006: Academia BIO RITMO, 1380, Avenida Engenheiro Domingos Ferreira, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51111-020, Brasil
+[7/756] Stop_id 010007: Parada 07, Avenida Engenheiro Domingos Ferreira, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51111-020, Brasil
+Erro na API do OSM para a parada 010008: Status 503
+[9/756] Stop_id 010009: Parada 09, Avenida Engenheiro Domingos Ferreira, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51111-020, Brasil
+[10/756] Stop_id 010010: Parada 10, Avenida Engenheiro Domingos Ferreira, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51111-020, Brasil
+[11/756] Stop_id 010011: Parada 11, Avenida Engenheiro Domingos Ferreira, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51111-020, Brasil
+[12/756] Stop_id 010012: 3704, Avenida Engenheiro Domingos Ferreira, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51111-020, Brasil
+[13/756] Stop_id 010013: 4080, Avenida Engenheiro Domingos Ferreira, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51111-020, Brasil
+[14/756] Stop_id 010014: 4403, Avenida Engenheiro Domingos Ferreira, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51111-020, Brasil
+[15/756] Stop_id 010015: Parada 16, Avenida Engenheiro Domingos Ferreira, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51111-020, Brasil
+[16/756] Stop_id 010016: 10016, Avenida Visconde de Jequitinhonha, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51030-021, Brasil
+[17/756] Stop_id 010017: 1656, Avenida Visconde de Jequitinhonha, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51030-021, Brasil
+[18/756] Stop_id 010018: Rua Engenheiro Zael Diógenes, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51030-010, Brasil
+[19/756] Stop_id 010019: Avenida Visconde de Jequitinhonha, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51021-190, Brasil
+[20/756] Stop_id 010020: 10020, Avenida Visconde de Jequitinhonha, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51021-190, Brasil
+[21/756] Stop_id 010021: 2954, Avenida Visconde de Jequitinhonha, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51021-190, Brasil
+[22/756] Stop_id 010022: Avenida Visconde de Jequitinhonha, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51021-190, Brasil
+[23/756] Stop_id 010023: Avenida Visconde de Jequitinhonha, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 51021-190, Brasil
+[24/756] Stop_id 010025: 10025, Avenida Ayrton Senna da Silva, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54420-700, Brasil
+[25/756] Stop_id 010026: Avenida Ayrton Senna da Silva, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54420-700, Brasil
+[26/756] Stop_id 010027: Avenida Ayrton Senna da Silva, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54420-700, Brasil
+[27/756] Stop_id 010028: Shopping Guararapes, Avenida Ayrton Senna da Silva, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54420-700, Brasil
+[28/756] Stop_id 010029: Escola Conviver, 161, Avenida Ayrton Senna da Silva, Cajueiro Seco A, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-020, Bra
+sil
+[29/756] Stop_id 010030: Avenida Ayrton Senna da Silva, Cajueiro Seco A, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54420-700, Brasil
+[30/756] Stop_id 010031: Nicola's, 462, Avenida Ayrton Senna da Silva, Cajueiro Seco A, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54420-700, Brasil
+[31/756] Stop_id 010032: Avenida Ayrton Senna da Silva, Cajueiro Seco A, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54420-700, Brasil
+[32/756] Stop_id 010033: Leão, 3402, Avenida Ayrton Senna da Silva, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54420-700, Brasil
+[33/756] Stop_id 010035: 10035, Avenida Ayrton Senna da Silva, Jardim do Campo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54420-700, Brasil
+[34/756] Stop_id 010037: Rua Joaquim Marques de Jesus, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54420-050, Brasil
+[35/756] Stop_id 010038: Avenida Presidente Castelo Branco, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-055, Brasil
+[36/756] Stop_id 010039: 10039, Avenida Presidente Castelo Branco, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-055, Brasil
+[37/756] Stop_id 010040: 10040, Avenida Presidente Castelo Branco, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-055, Brasil
+[38/756] Stop_id 010041: Avenida Presidente Castelo Branco, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-055, Brasil
+[39/756] Stop_id 010042: Avenida Presidente Castelo Branco, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-055, Brasil
+[40/756] Stop_id 010043: Avenida Presidente Castelo Branco, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-055, Brasil
+[41/756] Stop_id 010044: 5640, Avenida Presidente Castelo Branco, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-055, Brasil
+[42/756] Stop_id 010045: 10045, Avenida Presidente Castelo Branco, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-055, Brasil
+[43/756] Stop_id 010047: Avenida Presidente Castelo Branco, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-055, Brasil
+[44/756] Stop_id 010048: Rua Capitão Médico Osias Ribeiro, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-410, Brasil
+[45/756] Stop_id 010051: Rua Criciúma, Loteamento Praia do Sol, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 55470-030, Brasil
+[46/756] Stop_id 010052: 10052, Rua Criciúma, Loteamento Praia do Sol, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 55470-030, Brasil
+[47/756] Stop_id 010053: Rua Criciuma, Suvaco da Cobra, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54470-290, Brasil
+[48/756] Stop_id 010054: Terminal Barrra de Jangada, Rua Criciuma, Suvaco da Cobra, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54470-290, Brasi
+l
+[49/756] Stop_id 010055: 10053, Rua Criciuma, Suvaco da Cobra, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54470-290, Brasil
+[50/756] Stop_id 010056: Rua Criciúma, Loteamento Praia do Sol, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 55470-030, Brasil
+[51/756] Stop_id 010058: 10058, Rua Criciúma, Loteamento Praia do Sol, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 55470-030, Brasil
+[52/756] Stop_id 010059: 10049, Rua Ulisses Montarroyos, Loteamento Praia do Sol, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54310-080, Brasil
+[53/756] Stop_id 010060: Rua Ulisses Montarroyos, Loteamento Praia do Sol, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54310-080, Brasil
+[54/756] Stop_id 010061: Rua Capitão Médico Osias Ribeiro, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-410, Brasil
+[55/756] Stop_id 010062: 7622, Avenida Bernardo Vieira de Melo, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[56/756] Stop_id 010063: Avenida Bernardo Vieira de Melo, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[57/756] Stop_id 010064: Rua Coronel Kléber de Andrade, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54450-015, Brasil
+[58/756] Stop_id 010065: Avenida Bernardo Vieira de Melo, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[59/756] Stop_id 010066: Avenida Bernardo Vieira de Melo, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[60/756] Stop_id 010067: Avenida Bernardo Vieira de Melo, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[61/756] Stop_id 010068: Casa, 4971, Avenida Bernardo Vieira de Melo, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54450-020, Brasil
+[62/756] Stop_id 010070: Tallhamar, 4535, Avenida Bernardo Vieira de Melo, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-620, Brasil
+[63/756] Stop_id 010071: Avenida Bernardo Vieira de Melo, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[64/756] Stop_id 010072: Avenida Bernardo Vieira de Melo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[65/756] Stop_id 010074: Avenida Bernardo Vieira de Melo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[66/756] Stop_id 010075: Avenida Bernardo Vieira de Melo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[67/756] Stop_id 010076: 10076, Avenida Bernardo Vieira de Melo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[68/756] Stop_id 010077: Avenida Bernardo Vieira de Melo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[69/756] Stop_id 010078: Avenida Bernardo Vieira de Melo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[70/756] Stop_id 010079: 10079, Avenida Bernardo Vieira de Melo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[71/756] Stop_id 010080: Lojas Americanas, 2101, Avenida Bernardo Vieira de Melo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54410-010, Brasil
+[72/756] Stop_id 010082: Caixa Econômica Federal, 941, Avenida Bernardo Vieira de Melo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54410-010, Brasil
+[73/756] Stop_id 010083: Avenida Bernardo Vieira de Melo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[74/756] Stop_id 010084: Galeria Praia Center, 1243, Avenida Bernardo Vieira de Melo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[75/756] Stop_id 010085: 10085, Avenida Bernardo Vieira de Melo, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-000, Brasil
+[76/756] Stop_id 010086: Ciclofaixa Orla de Boa Viagem, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-003, Brasil
+[77/756] Stop_id 010087: Ciclofaixa Orla de Boa Viagem, Piedade, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54400-003, Brasil
+[78/756] Stop_id 010088: Praia Boa Viagem, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51130-000, Brasil
+[79/756] Stop_id 010089: Ciclofaixa Orla de Boa Viagem, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51130-350, Brasil
+[80/756] Stop_id 010090: Ciclofaixa Orla de Boa Viagem, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51130-350, Brasil
+Erro na API do OSM para a parada 010091: Status 503
+[82/756] Stop_id 010092: Praia Boa Viagem, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51030-250, Brasil
+[83/756] Stop_id 010093: Calçadão de Boa Viagem, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51130-350, Brasil
+[84/756] Stop_id 010094: Ciclofaixa Orla de Boa Viagem, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51030-280, Brasil
+[85/756] Stop_id 010095: Rua Barão de Souza Leão, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51030-300, Brasil
+[86/756] Stop_id 010097: 4741, Avenida Conselheiro Aguiar, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51110-020, Brasil
+[87/756] Stop_id 010098: Itaú, 4310, Avenida Conselheiro Aguiar, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51011-031, Brasil
+[88/756] Stop_id 010099: 3810, Avenida Conselheiro Aguiar, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51011-031, Brasil
+[89/756] Stop_id 010100: 010100, Avenida Conselheiro Aguiar, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51110-020, Brasil
+[90/756] Stop_id 010101: Avenida Conselheiro Aguiar, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51110-020, Brasil
+[91/756] Stop_id 010102: 010102, Avenida Conselheiro Aguiar, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51011-031, Brasil
+[92/756] Stop_id 010103: 010103, Avenida Conselheiro Aguiar, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51011-031, Brasil
+[93/756] Stop_id 010104: 010104, Avenida Conselheiro Aguiar, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51011-031, Brasil
+[94/756] Stop_id 010106: 010106, Avenida Conselheiro Aguiar, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51011-031, Brasil
+[95/756] Stop_id 010107: 1164, Avenida Conselheiro Aguiar, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51011-031, Brasil
+[96/756] Stop_id 010108: 010108, Avenida Conselheiro Aguiar, Pina, Recife, Pernambuco, Região Nordeste, 51011-031, Brasil
+[97/756] Stop_id 010109: 010109, Avenida Conselheiro Aguiar, Pina, Recife, Pernambuco, Região Nordeste, 51011-031, Brasil
+[98/756] Stop_id 010118: Escola Estadual Landelino Rocha, Avenida Conselheiro Aguiar, Pina, Recife, Pernambuco, Região Nordeste, 51011-031, Brasil
+[99/756] Stop_id 010179: Rua Padre Carapuceiro, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51020-280, Brasil
+[100/756] Stop_id 010180: Entrada Ônibus Shopping Recife, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51020-970, Brasil
+[101/756] Stop_id 010181: 421, Rua Ribeiro de Brito, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51021-310, Brasil
+[102/756] Stop_id 010186: Boa Viagem, Recife, Pernambuco, Região Nordeste, 51021-330, Brasil
+[103/756] Stop_id 010189: Rua Bruno Veloso, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51021-280, Brasil
+[104/756] Stop_id 010190: 80, Rua Tenente Domingos de Brito, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51021-100, Brasil
+[105/756] Stop_id 010337: Rua Criciúma, Loteamento Praia do Sol, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 55470-030, Brasil
+[106/756] Stop_id 010338: Avenida Presidente Castelo Branco, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-055, Brasil
+[107/756] Stop_id 010339: J. J Pet Shop, Rua Criciúma, Loteamento Praia do Sol, Barra de Jangada, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 55470-030, Brasil
+[108/756] Stop_id 010348: Parada 01 - Shopping RioMar, Avenida República Árabe Unida, Jardim Beira Rio, Pina, Recife, Pernambuco, Região Nordeste, 51110-380, Brasil
+[109/756] Stop_id 010349: 627, Rua Manoel de Brito, Jardim Beira Rio, Pina, Recife, Pernambuco, Região Nordeste, 51110-100, Brasil
+[110/756] Stop_id 010352: Passarela Riomar, Jardim Beira Rio, Pina, Recife, Pernambuco, Região Nordeste, 51110-380, Brasil
+[111/756] Stop_id 010497: 26, Rua Melqui Ribeiro Roma, Jardim Beira Rio, Pina, Recife, Pernambuco, Região Nordeste, 51010-730, Brasil
+[112/756] Stop_id 010498: Parada 13, Avenida Engenheiro Domingos Ferreira, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51111-020, Brasil
+[113/756] Stop_id 010510: 314, Rua Tenente Domingos de Brito, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51021-100, Brasil
+[114/756] Stop_id 010543: 14, Avenida República do Líbano, Jardim Beira Rio, Pina, Recife, Pernambuco, Região Nordeste, 51110-160, Brasil
+[115/756] Stop_id 010544: 5820, Avenida Presidente Castelo Branco, Candeias, Jaboatão dos Guararapes, Pernambuco, Região Nordeste, 54440-055, Brasil
+[116/756] Stop_id 010546: Rua Ribeiro de Brito, Boa Viagem, Recife, Pernambuco, Região Nordeste, 51021-310, Brasil
+[117/756] Stop_id 040272: 040272, Rua Manuel Inácio, Areias - Barro, Jardim São Paulo, Recife, Pernambuco, Região Nordeste, 50920-090, Brasil
+[118/756] Stop_id 040910: 10, Terminal Integrado Barro, Areias - Barro, Jardim São Paulo, Recife, Pernambuco, Região Nordeste, 50781-350, Brasil
+[119/756] Stop_id 040912: 06, Terminal Integrado Barro, Areias - Barro, Jardim São Paulo, Recife, Pernambuco, Região Nordeste, 50781-350, Brasil
+[120/756] Stop_id 080127: 268, Rua Conde de Irajá, Torre, Recife, Pernambuco, Região Nordeste, 50710-310, Brasil
+[121/756] Stop_id 080128: 499, Rua Conde de Irajá, Torre, Recife, Pernambuco, Região Nordeste, 50710-310, Brasil
+[122/756] Stop_id 080198: Abolição, Avenida Caxangá, Sítio do Berardo, Madalena, Recife, Pernambuco, Região Nordeste, 50711-000, Brasil
+[123/756] Stop_id 080240: 1217, Avenida Afonso Olindense, Vila Malvinas - Vila Arraes, Jardim Petrópolis, Várzea, Recife, Pernambuco, Região Nordeste, 50810-000, Brasil
+[124/756] Stop_id 080247: 080247, Avenida Afonso Olindense, Várzea, Recife, Pernambuco, Região Nordeste, 50810-000, Brasil
+[125/756] Stop_id 080248: 80248, Avenida Afonso Olindense, Várzea, Recife, Pernambuco, Região Nordeste, 50810-000, Brasil
+[126/756] Stop_id 080249: Rua Eumatuba, Condomino Praça das Araucárias, Jardim Petrópolis, Várzea, Recife, Pernambuco, Região Nordeste, 50810-060, Brasil
+[127/756] Stop_id 080250: 929, Avenida Afonso Olindense, Vila Malvinas - Vila Arraes, Jardim Petrópolis, Várzea, Recife, Pernambuco, Região Nordeste, 50810-000, Brasil
+[128/756] Stop_id 080251: Assembleia de Deus, 1276, Avenida Afonso Olindense, Vila Malvinas - Vila Arraes, Jardim Petrópolis, Várzea, Recife, Pernambuco, Região Nordeste, 5
+0810-000, Brasil
+[129/756] Stop_id 080252: Comedoria Maroca, Avenida Afonso Olindense, Vila Malvinas - Vila Arraes, Jardim Petrópolis, Várzea, Recife, Pernambuco, Região Nordeste, 50810-000
+, Brasil
+[130/756] Stop_id 080253: Avenida Afonso Olindense, Vila Malvinas - Vila Arraes, Jardim Petrópolis, Várzea, Recife, Pernambuco, Região Nordeste, 50810-000, Brasil
+[131/756] Stop_id 080254: 1927, Avenida Afonso Olindense, Vila Malvinas - Vila Arraes, Jardim Petrópolis, Várzea, Recife, Pernambuco, Região Nordeste, 50810-000, Brasil
+[132/756] Stop_id 080255: 80255, Avenida Afonso Olindense, Jardim Teresópolis, Várzea, Recife, Pernambuco, Região Nordeste, 50810-000, Brasil
+[133/756] Stop_id 080256: USF+ Vila Arraes, Rua Seis de Março, Vila Malvinas - Vila Arraes, Jardim Petrópolis, Várzea, Recife, Pernambuco, Região Nordeste, 50741-180, Brasi
+l
+[134/756] Stop_id 080257: 1513, Avenida Afonso Olindense, Vila Malvinas - Vila Arraes, Jardim Petrópolis, Várzea, Recife, Pernambuco, Região Nordeste, 50810-000, Brasil
+[135/756] Stop_id 080259: 797, Avenida Afonso Olindense, Jardim Petrópolis, Várzea, Recife, Pernambuco, Região Nordeste, 50810-000, Brasil
+[136/756] Stop_id 080260: Academia Cleo Frazão, 420, Avenida Afonso Olindense, Várzea, Recife, Pernambuco, Região Nordeste, 50810-000, Brasil
+[137/756] Stop_id 080261: Praça Pinto Damásio, Jardim Teresópolis, Várzea, Recife, Pernambuco, Região Nordeste, 50741-110, Brasil
+[138/756] Stop_id 080263: 69, Rua Rodrigues Ferreira, Várzea, Recife, Pernambuco, Região Nordeste, 50810-020, Brasil
+[139/756] Stop_id 080264: Universidade Federal de Pernambuco, 1235, Avenida Professor Moraes Rego, Cidade Universitária, Recife, Pernambuco, Região Nordeste, 50670-420, Bra
+sil
+[140/756] Stop_id 080266: Universidade Federal de Pernambuco, 1235, Avenida Professor Moraes Rego, Cidade Universitária, Recife, Pernambuco, Região Nordeste, 50670-420, Bra
+sil

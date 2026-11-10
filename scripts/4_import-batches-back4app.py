@@ -1,9 +1,13 @@
 import json
 import time
 import requests
+import os
+from dotenv import load_dotenv
 
-APPLICATION_ID = "zenOCth3xZBRr7GmIe6ykDt51QGk7yZm9dHTvIpZ"
-REST_API_KEY = "S5WfC4RiNVJeAt8a0s6DIaEJjiD4djBsxH1a5PgS"
+load_dotenv()
+
+APPLICATION_ID = os.getenv("EXPO_PUBLIC_BACK4APP_APP_ID")
+REST_API_KEY = os.getenv("EXPO_PUBLIC_BACK4APP_REST_KEY")
 
 headers = {
     'X-Parse-Application-Id': APPLICATION_ID,
