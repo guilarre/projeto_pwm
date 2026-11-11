@@ -17,6 +17,8 @@ Parse.Cloud.define("migrarLatLong", async (request) => {
         if (!isNaN(latNum) && !isNaN(lonNum)) {
             stop.set("lat", latNum);
             stop.set("lon", lonNum);
+            // passamos useMasterKey pra ter acesso sem restrições ao BD
+            // (é seguro se for apenas no ambiente do Cloud Code)
             await stop.save(null, { useMasterKey: true });
             atualizados++;
         }
@@ -162,3 +164,25 @@ Parse.Cloud.define("getBusesForStop", async (request) => {
     }
 });
 
+// NOTE: Passamos o stop_id e a função retorna o endereço
+Parse.Cloud.define("getAddressForStop", async (request) => {
+    const { stopId } = request.params;
+
+    if (!stopId) {
+        throw new Parse.Error(400, "O parâmetro stopId é obrigatório.");
+    }
+
+    try {
+        const addressQuery = new Parse.Query("Addresses");
+        addressQuery.equalTo("stop_id", stopId);
+
+        // como o stop_id é único, pegamos usando .first(), já que o
+        // .find() retornaria um array, mesmo que tenha apenas 1 elem
+        const address = await addressQuery.first({ useMasterKey: true });
+
+        // retorna endereço, ou null caso não encontre um endereço
+        return address || null;
+    } catch (error) {
+        throw new Parse.Error(500, `Erro ao processar endereço da parada de ID ${stopId}: ` + error.message);
+    }
+});

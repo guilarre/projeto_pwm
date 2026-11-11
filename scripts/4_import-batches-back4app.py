@@ -81,38 +81,41 @@ def importar_em_batches(json_path, nome_classe, start_index=0):
 
 
 # NOTE: comentar conforme for tendo sucesso
-json_paths = [
-    '../jsons/calendar.json',
-    '../jsons/calendar_dates.json',
-    '../jsons/routes.json',
-    '../jsons/stops.json',
-    '../jsons/trips.json',
-    '../jsons/stop_times.json',
-    '../jsons/shapes.json',
-]
+# json_paths = [
+#     '../jsons/calendar.json',
+#     '../jsons/calendar_dates.json',
+#     '../jsons/routes.json',
+#     '../jsons/stops.json',
+#     '../jsons/trips.json',
+#     '../jsons/stop_times.json',
+#     '../jsons/shapes.json',
+# ]
 
 # NOTE: comentar conforme for tendo sucesso
-class_names = [
-    'Calendar',
-    'CalendarDates',
-    'Routes',
-    'Stops',
-    'Trips',
-    'StopTimes',
-    'Shapes',
-]
+# class_names = [
+#     'Calendar',
+#     'CalendarDates',
+#     'Routes',
+#     'Stops',
+#     'Trips',
+#     'StopTimes',
+#     'Shapes',
+# ]
 
 # aqui agt pode alterar conforme for falhando e pegando os índices pra continuar..
 # ATTENTION: lembrar de sempre checar no back4app se recomeçar do índice q parou não geraria duplicada
-start_indices = [
-    0, # Calendar
-    0, # CalendarDates
-    0, # Routes
-    0, # Stops
-    0, # Trips
-    0, # StopTimes
-    0, # Shapes
-]
+# start_indices = [
+#     0, # Calendar
+#     0, # CalendarDates
+#     0, # Routes
+#     0, # Stops
+#     0, # Trips
+#     0, # StopTimes
+#     0, # Shapes
+# ]
 
-for json_path, class_name, start_index in zip(json_paths, class_names, start_indices):
-    importar_em_batches(json_path, class_name, start_index=start_index)
+# for json_path, class_name, start_index in zip(json_paths, class_names, start_indices):
+#     importar_em_batches(json_path, class_name, start_index=start_index)
+
+# importando os endereços em addresses.json
+importar_em_batches('../data/addresses.json', 'Addresses', 0)
