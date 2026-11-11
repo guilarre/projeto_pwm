@@ -27,6 +27,8 @@ nominatim_headers = {
     'User-Agent': 'ProjetoBusUnicap/1.0 (guilherme.00000860657@unicap.br)'
 }
 
+json_path = '../data/addresses.json'
+csv_path = '../data/addresses.csv' #nosso failsafe
 stops_data = []
 
 # populando a lista que será enviada
@@ -44,8 +46,14 @@ with open('../data/relevant-entries/stops.txt', 'r', encoding='utf-8-sig') as cs
 # requisição ao openstreetmap
 print(f"Iniciando o processamento de {len(stops_data)} paradas...")
 
-payload_list = []
+payload_list = [] #vai pro json no final
 failed_stops = [] #pra pegarmos depois os que falharem
+
+# escrevendo o header no nosso failsafe...
+with open(csv_path, 'w', encoding='utf-8', newline='') as csv_file:
+    fieldnames = ['stop_id', 'stop_name', 'address', 'location']
+    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+    writer.writeheader()
 
 for idx, stop in enumerate(stops_data):
     lat = stop['lat']
@@ -78,6 +86,21 @@ for idx, stop in enumerate(stops_data):
                     }
                 }
 
+                # escreve logo no failsafe
+                try:
+                    with open(csv_path, 'a', encoding='utf-8', newline='') as csv_file:
+                        writer = csv.writer(csv_file)
+                        writer.writerow([
+                            payload['stop_id'],
+                            payload['stop_name'],
+                            payload['address'],
+                            f"Lat: {lat}, Lon: {lon}"
+                        ])
+                    print(f"SUCESSO!! Gerou CSV failsafe em: {csv_path}")
+
+                except Exception as e:
+                    print(f"ERRO ao salvar ID {payload['stop_id']} no CSV failsafe: {e}")
+
                 payload_list.append(payload)
                 success = True
 
@@ -104,9 +127,10 @@ for idx, stop in enumerate(stops_data):
     if not success:
         print(f"-> FALHA DEFINITIVA na parada {stop['stop_id']}. Adicionada à lista de pendências.")
         failed_stops.append(stop)
-        # NOTE: limite de 1 requisição por segundo do Nominatim...
-        # deixei em 1.2s pra tentar evitar o erro 503
-        time.sleep(1.2)
+
+    # NOTE: limite de 1 requisição por segundo do Nominatim...
+    # deixei em 1.2s pra tentar evitar o erro 503
+    time.sleep(1.2)
 
 print("Processamento concluído!")
 
@@ -133,24 +157,24 @@ else:
     print("SUCESSO KRAY! Nenhuma parada falhou.")
 
 # failsafe em csv
-csv_path = '../data/addresses.csv'
-try:
-    if payload_list:
-        with open(csv_path, 'w', encoding='utf-8', newline='') as csv_file:
-                fieldnames = ['stop_id', 'stop_name', 'address', 'location']
-                writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-                writer.writeheader()
-
-        for item in payload_list:
-            row_to_write = {
-                'stop_id': item['stop_id'],
-                'stop_name': item['stop_name'],
-                'address': item['address'],
-                'location': {
-                    "latitude": item['location']['latitude'],
-                    "longitude": item['location']['longitude']
-                }
-            }
-    print(f"SUCESSO!! Gerou CSV failsafe em: {csv_path}")
-except Exception as e:
-    print(f"ERRO ao salvar CSV failsafe: {e}")
+# csv_path = '../data/addresses.csv'
+# try:
+#     if payload_list:
+#         with open(csv_path, 'w', encoding='utf-8', newline='') as csv_file:
+#                 fieldnames = ['stop_id', 'stop_name', 'address', 'location']
+#                 writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+#                 writer.writeheader()
+#
+#         for item in payload_list:
+#             row_to_write = {
+#                 'stop_id': item['stop_id'],
+#                 'stop_name': item['stop_name'],
+#                 'address': item['address'],
+#                 'location': {
+#                     "latitude": item['location']['latitude'],
+#                     "longitude": item['location']['longitude']
+#                 }
+#             }
+#     print(f"SUCESSO!! Gerou CSV failsafe em: {csv_path}")
+# except Exception as e:
+#     print(f"ERRO ao salvar CSV failsafe: {e}")
