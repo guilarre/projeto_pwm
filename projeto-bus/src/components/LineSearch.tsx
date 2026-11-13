@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
-  TextInput,
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
@@ -11,6 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { ThemedText } from "@/components/themed-text";
 import { BACK4APP_CONFIG } from "@/config/back4app";
+import { BusSearchBar } from "@/components/BusSearchBar";
 
 interface BusRoute {
   objectId: string;
@@ -20,7 +20,7 @@ interface BusRoute {
   agency_id?: string;
 }
 
-// Bairros rápidos para o usuário clicar e filtrar com 1 toque
+// Bairros rápidos para filtro de origem/destino com 1 toque
 const BAIRROS_RAPIDOS = [
   "Todos",
   "Rio Doce",
@@ -38,7 +38,7 @@ export function LineSearch() {
   const [bairroSelecionado, setBairroSelecionado] = useState("Todos");
   const [loading, setLoading] = useState(true);
 
-  //Busca todas as linhas cadastradas no Back4App
+  // 1. Busca as linhas cadastradas no Back4App
   useEffect(() => {
     async function carregarLinhas() {
       setLoading(true);
@@ -66,26 +66,25 @@ export function LineSearch() {
     carregarLinhas();
   }, []);
 
-  //Filtro em tempo real:origem ou destino)
+  // 2. Filtro em tempo real combinando: Número, Nome e Bairros (Origem/Destino)
   const linhasFiltradas = linhas.filter((item) => {
-    const termoDigitado = busca.toLowerCase().trim();
+    const termo = busca.toLowerCase().trim();
     const nomeCompleto = (item.route_long_name || "").toLowerCase();
     const numero = (item.route_short_name || "").toLowerCase();
 
-    // Filtro pelo campo de texto (origem, destino ou número)
-    const bateTexto =
-      termoDigitado === "" ||
-      nomeCompleto.includes(termoDigitado) ||
-      numero.includes(termoDigitado);
+    // Pesquisa por número ou nome
+    const bateBuscaTexto =
+      termo === "" || nomeCompleto.includes(termo) || numero.includes(termo);
 
-    // Filtro pelos botões de bairros rápidos
+    // Filtro por bairro selecionado nos chips
     const bateChipBairro =
       bairroSelecionado === "Todos" ||
       nomeCompleto.includes(bairroSelecionado.toLowerCase());
 
-    return bateTexto && bateChipBairro;
+    return bateBuscaTexto && bateChipBairro;
   });
 
+  // Quebra a string do nome em Origem e Destino
   const separarOrigemDestino = (nomeLinha: string) => {
     if (!nomeLinha) return { origem: "Recife", destino: "Recife" };
     const partes = nomeLinha.split("/");
@@ -103,32 +102,18 @@ export function LineSearch() {
 
   return (
     <View style={styles.container}>
-      {/* Campo de Busca Unificado */}
-      <View style={styles.searchBox}>
-        <Ionicons
-          name="search"
-          size={20}
-          color="#888"
-          style={{ marginRight: 8 }}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Filtrar por bairro de origem, destino ou nº..."
-          placeholderTextColor="#999"
-          value={busca}
-          onChangeText={(texto) => {
-            setBusca(texto);
-            if (bairroSelecionado !== "Todos") setBairroSelecionado("Todos");
-          }}
-        />
-        {busca.length > 0 && (
-          <TouchableOpacity onPress={() => setBusca("")}>
-            <Ionicons name="close-circle" size={18} color="#888" />
-          </TouchableOpacity>
-        )}
-      </View>
+      {/* Componente Modular de Pesquisa por Número ou Nome */}
+      <BusSearchBar
+        value={busca}
+        onChangeText={(texto) => {
+          setBusca(texto);
+          if (bairroSelecionado !== "Todos") setBairroSelecionado("Todos");
+        }}
+        onClear={() => setBusca("")}
+        placeholder="Buscar por número (ex: 030) ou nome do bus..."
+      />
 
-      {/* Chips de Bairros Rápidos */}
+      {/* Chips Rápidos de Filtragem por Bairro de Origem/Destino */}
       <View style={{ maxHeight: 42, marginBottom: 12 }}>
         <ScrollView
           horizontal
@@ -160,7 +145,7 @@ export function LineSearch() {
         </ScrollView>
       </View>
 
-      {/* Indicador de resultados */}
+      {/* Indicador da contagem de linhas */}
       <ThemedText style={styles.counterText}>
         {linhasFiltradas.length}{" "}
         {linhasFiltradas.length === 1
@@ -168,7 +153,7 @@ export function LineSearch() {
           : "linhas encontradas"}
       </ThemedText>
 
-      {/* Lista das Linhas Filtradas */}
+      {/* Listagem das Linhas */}
       {loading ? (
         <View style={styles.centerBox}>
           <ActivityIndicator size="large" color="#27ae60" />
@@ -183,7 +168,7 @@ export function LineSearch() {
             Nenhuma linha encontrada
           </ThemedText>
           <ThemedText style={styles.emptySubtitle}>
-            Tente buscar por outro bairro de origem ou destino.
+            Tente pesquisar por outro número, nome ou bairro.
           </ThemedText>
         </View>
       ) : (
@@ -216,7 +201,6 @@ export function LineSearch() {
                   {item.route_long_name}
                 </ThemedText>
 
-                {/* Exibição clara de Origem e Destino */}
                 <View style={styles.routeDetails}>
                   <View style={styles.detailRow}>
                     <Ionicons
@@ -250,22 +234,6 @@ export function LineSearch() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    marginBottom: 10,
-  },
-  input: {
-    flex: 1,
-    fontSize: 14,
-    color: "#111",
-  },
   chipsContainer: {
     flexDirection: "row",
     gap: 8,
