@@ -96,7 +96,6 @@ export function BusMap() {
                                 router.push({
                                     pathname: `/stop/${stop.objectId}`,
                                     params: {
-                                        name: stop.stop_name,
                                         stopId: stop.stop_id
                                     }
                                 });
