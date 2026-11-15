@@ -2,27 +2,7 @@ import csv
 import json
 import time
 import requests
-# import os
-# from dotenv import load_dotenv
 
-# load_dotenv()
-
-# vamos receber as lat/lon das paradas para fazer a pesquisa reversa dos
-# endereços, e depois criaremos uma tabela com os endereços no banco (do
-# back4app), para um lookup mais rápido
-
-# credenciais do back4app
-# APPLICATION_ID = os.getenv("EXPO_PUBLIC_BACK4APP_APP_ID")
-# REST_API_KEY = os.getenv("EXPO_PUBLIC_BACK4APP_REST_KEY")
-
-# back4app_headers = {
-#     'X-Parse-Application-Id': APPLICATION_ID,
-#     'X-Parse-REST-API-Key': REST_API_KEY,
-#     'Content-Type': 'application/json',
-# }
-
-# vamos usar o OpenStreetMap (a api do google não é mais gratuita, eu acho)
-# aqui mandamos a config do User-Agent obrigatória do Nominatim
 nominatim_headers = {
     'User-Agent': 'ProjetoBusUnicap/1.0 (guilherme.00000860657@unicap.br)'
 }
