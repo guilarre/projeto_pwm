@@ -7,11 +7,21 @@ import {
     FlatList,
     Pressable,
     Image,
+    Animated,
+    PanResponder,
+    Dimensions,
 } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons'; // CHECK: ver se mantemos assim ou com o definido no figma
 import { BACK4APP_CONFIG } from '@/config/back4app';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// Alturas do painel inferior (expandido vs recolhido)
+const SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.62;
+const SHEET_MIN_HEIGHT = 150;
+const MAX_TRANSLATE_Y = SHEET_MAX_HEIGHT - SHEET_MIN_HEIGHT;
 
 interface StopLocation {
     latitude: number;
@@ -40,11 +50,96 @@ export default function BusDetailScreen() {
 
     const router = useRouter();
     const mapRef = useRef<MapView | null>(null);
+    const flatListRef = useRef<FlatList<ItineraryStop> | null>(null); //ref pra retornarmos depois à parada selecionada na FlatList
+    const markerRefs = useRef<Record<string, React.ComponentRef<typeof Marker> | null>>({});
 
     const [stops, setStops] = useState<ItineraryStop[]>([]);
     const [shapes, setShapes] = useState<ShapePoint[]>([]);
     const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+
+    const stopsRef = useRef<ItineraryStop[]>([]);
+    const shapesRef = useRef<ShapePoint[]>([]);
+
+    // Controle da animação do Bottom Sheet (0 = expandido, MAX_TRANSLATE_Y = recolhido)
+    const translateY = useRef(new Animated.Value(0)).current;
+    const lastOffset = useRef(0);
+
+    const fitRouteToMap = (
+        isSheetOpen: boolean,
+        currentShapes: ShapePoint[] = shapesRef.current,
+        currentStops: ItineraryStop[] = stopsRef.current
+    ) => {
+        if (!mapRef.current) return;
+
+        // Enquadra automaticamente o traçado ou as paradas na tela
+        const coordsToFit =
+            currentShapes.length > 0
+                ? currentShapes
+                : currentStops
+                      .filter((s) => s.location !== null)
+                      .map((s) => ({
+                          latitude: Number(s.location!.latitude),
+                          longitude: Number(s.location!.longitude),
+                      }));
+
+        if (coordsToFit.length > 0) {
+            const bottomPadding = isSheetOpen ? SHEET_MAX_HEIGHT + 30 : SHEET_MIN_HEIGHT + 30;
+            mapRef.current.fitToCoordinates(coordsToFit, {
+                // Compensa a altura do painel expandido para centralizar a rota na área visível
+                edgePadding: {
+                    top: 90,
+                    right: 50,
+                    bottom: bottomPadding,
+                    left: 50,
+                },
+                animated: true,
+            });
+        }
+    };
+
+    const animateSheetTo = (toValue: number) => {
+        lastOffset.current = toValue;
+        Animated.spring(translateY, {
+            toValue,
+            useNativeDriver: true,
+            bounciness: 4,
+            speed: 14,
+        }).start();
+
+        fitRouteToMap(toValue === 0);
+    };
+
+    // Alterna entre expandido e recolhido com um toque simples no handle
+    const toggleSheet = () => {
+        const nextTarget = lastOffset.current === 0 ? MAX_TRANSLATE_Y : 0;
+        animateSheetTo(nextTarget);
+    };
+
+    // Controla o arraste vertical na área do handle/cabeçalho
+    const panResponder = useRef(
+        PanResponder.create({
+            onMoveShouldSetPanResponder: (_, gestureState) => {
+                // Ativa o arraste apenas se o movimento vertical for intencional
+                return Math.abs(gestureState.dy) > 6 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
+            },
+            onPanResponderMove: (_, gestureState) => {
+                const nextY = lastOffset.current + gestureState.dy;
+                const clampedY = Math.max(0, Math.min(MAX_TRANSLATE_Y, nextY));
+                translateY.setValue(clampedY);
+            },
+            onPanResponderRelease: (_, gestureState) => {
+                const currentY = lastOffset.current + gestureState.dy;
+
+                // Se puxou rápido para baixo ou passou da metade do caminho, recolhe
+                if (gestureState.vy > 0.5 || (gestureState.vy >= -0.5 && currentY > MAX_TRANSLATE_Y / 2)) {
+                    animateSheetTo(MAX_TRANSLATE_Y);
+                } else {
+                    animateSheetTo(0);
+                }
+            },
+        })
+    ).current;
 
     useEffect(() => {
         if (!tripId) {
@@ -71,26 +166,15 @@ export default function BusDetailScreen() {
                     const fetchedStops: ItineraryStop[] = data.result.stops || [];
                     const fetchedShapes: ShapePoint[] = data.result.shapes || [];
 
+                    stopsRef.current = fetchedStops;
+                    shapesRef.current = fetchedShapes;
+
                     setStops(fetchedStops);
                     setShapes(fetchedShapes);
 
-                    // Enquadra automaticamente o traçado ou as paradas na tela
-                    const coordsToFit =
-                        fetchedShapes.length > 0
-                            ? fetchedShapes
-                            : fetchedStops
-                                  .filter((s) => s.location !== null)
-                                  .map((s) => ({
-                                      latitude: Number(s.location!.latitude),
-                                      longitude: Number(s.location!.longitude),
-                                  }));
-
-                    if (coordsToFit.length > 0) {
+                    if (fetchedShapes.length > 0 || fetchedStops.some((s) => s.location !== null)) {
                         setTimeout(() => {
-                            mapRef.current?.fitToCoordinates(coordsToFit, {
-                                edgePadding: { top: 70, right: 50, bottom: 50, left: 50 },
-                                animated: true,
-                            });
+                            fitRouteToMap(true, fetchedShapes, fetchedStops);
                         }, 300);
                     }
                 }
@@ -111,100 +195,119 @@ export default function BusDetailScreen() {
         return parts.slice(0, 3).join(',').trim();
     };
 
-    // Centraliza o mapa ao clicar em uma parada da lista
-    const handleFocusStopOnMap = (stop: ItineraryStop) => {
+    const handleMarkerPress = (stop: ItineraryStop, index: number) => {
         setSelectedStopId(stop.stop_id);
-        if (stop.location && mapRef.current) {
-            mapRef.current.animateToRegion(
-                {
-                    latitude: Number(stop.location.latitude),
-                    longitude: Number(stop.location.longitude),
-                    latitudeDelta: 0.004,
-                    longitudeDelta: 0.004,
-                },
-                500
-            );
+
+        if (lastOffset.current !== 0) {
+            animateSheetTo(0);
         }
+
+        flatListRef.current?.scrollToIndex({
+            index,
+            animated: true,
+            viewPosition: 0.3,
+        });
+
+        // Aguarda o clique nativo do Google Maps finalizar antes de enquadrar na área superior
+        setTimeout(() => {
+            fitRouteToMap(true);
+        }, 150);
+    };
+
+    // Centraliza o mapa ao clicar em uma parada da lista
+    const handleFocusStopOnMap = (stop: ItineraryStop, index: number) => {
+        setSelectedStopId(stop.stop_id);
+        markerRefs.current[`${stop.stop_id}-${index}`]?.showCallout();
+        fitRouteToMap(lastOffset.current === 0);
     };
 
     return (
         <View style={styles.container}>
-            {/* METADE SUPERIOR: Mapa com o trajeto e os markers das paradas */}
-            {/* SECTION: PARTE SUPERIOR: map view */}
-            <View style={styles.mapWrapper}>
-                <MapView
-                    ref={mapRef}
-                    style={styles.map}
-                    initialRegion={{
-                        latitude: -8.0476,
-                        longitude: -34.877,
-                        latitudeDelta: 0.08,
-                        longitudeDelta: 0.08,
-                    }}
-                >
-                    {/* Linha do trajeto (se houver pontos na tabela Shapes) */}
-                    {shapes.length > 0 && (
-                        <Polyline
-                            coordinates={shapes}
-                            strokeColor="#007AFF"
-                            strokeWidth={4}
-                        />
-                    )}
+            {/* MAPA EM TELA CHEIA NO FUNDO */}
+            <MapView
+                ref={mapRef}
+                style={StyleSheet.absoluteFill}
+                initialRegion={{
+                    latitude: -8.0476,
+                    longitude: -34.877,
+                    latitudeDelta: 0.08,
+                    longitudeDelta: 0.08,
+                }}
+            >
+                {/* Linha do trajeto (se houver pontos na tabela Shapes) */}
+                {shapes.length > 0 && (
+                    <Polyline
+                        coordinates={shapes}
+                        strokeColor="#007AFF"
+                        strokeWidth={4}
+                    />
+                )}
 
-                    {/* Marcadores de todas as paradas do itinerário */}
-                    {stops.map((stop, index) => {
-                        if (!stop.location) return null;
-                        const latitude = Number(stop.location.latitude);
-                        const longitude = Number(stop.location.longitude);
-                        if (isNaN(latitude) || isNaN(longitude)) return null;
+                {/* Marcadores de todas as paradas do itinerário */}
+                {stops.map((stop, index) => {
+                    if (!stop.location) return null;
+                    const latitude = Number(stop.location.latitude);
+                    const longitude = Number(stop.location.longitude);
+                    if (isNaN(latitude) || isNaN(longitude)) return null;
 
-                        return (
-                            <Marker
-                                key={`${stop.stop_id}-${index}`}
-                                coordinate={{ latitude, longitude }}
-                                title={`${index + 1}. Parada ${stop.stop_id}`}
-                                description={formatShortAddress(stop.address)}
-                                onPress={() => setSelectedStopId(stop.stop_id)}
-                            >
-                                <Image
-                                    source={require('../../../assets/figma.icons/bus-stop.png')}
-                                    style={{ width: 38, height: 46 }}
-                                    resizeMode="contain"
-                                />
-                            </Marker>
-                        );
-                    })}
-                </MapView>
+                    return (
+                        <Marker
+                            ref={(ref) => {
+                                markerRefs.current[`${stop.stop_id}-${index}`] = ref;
+                            }}
+                            key={`${stop.stop_id}-${index}`}
+                            coordinate={{ latitude, longitude }}
+                            title={`${index + 1}. Parada ${stop.stop_id}`}
+                            description={formatShortAddress(stop.address)}
+                            onPress={() => handleMarkerPress(stop, index)}
+                        >
+                            <Image
+                                source={require('../../../assets/figma.icons/bus-stop.png')}
+                                style={{ width: 38, height: 46 }}
+                                resizeMode="contain"
+                            />
+                        </Marker>
+                    );
+                })}
+            </MapView>
 
-                {/* SECTION: Botão flutuante de Voltar */}
-                <Pressable
-                    style={({ pressed }) => [styles.backButton, pressed && { opacity: 0.8 }]}
-                    onPress={() => router.back()}
-                >
-                    <Ionicons name="arrow-back" size={24} color="#111" />
-                </Pressable>
-            </View>
+            {/* SECTION: Botão flutuante de Voltar */}
+            <Pressable
+                style={({ pressed }) => [styles.backButton, pressed && { opacity: 0.8 }]}
+                onPress={() => router.back()}
+            >
+                <Ionicons name="arrow-back" size={24} color="#111" />
+            </Pressable>
 
-            {/* SECTION: PARTE INFERIOR: Painel estilo Bottom Sheet com detalhes e itinerário */}
-            <View style={styles.sheetContainer}>
-                {/* TODO: falta a funcionalidade ainda do handle */}
-                <View style={styles.dragHandle} />
+            {/* PAINEL INFERIOR ARRASTÁVEL */}
+            <Animated.View
+                style={[
+                    styles.sheetContainer,
+                    { transform: [{ translateY }] },
+                ]}
+            >
+                {/* Zona sensível ao arraste e ao toque (Handle + Cabeçalho da linha) */}
+                <View {...panResponder.panHandlers}>
+                    <Pressable style={styles.handleTouchArea} onPress={toggleSheet}>
+                        <View style={styles.dragHandle} />
+                    </Pressable>
 
                 {/* Cabeçalho da linha */}
-                <View style={styles.routeHeader}>
-                    <View style={styles.badgeRow}>
-                        <View style={styles.routeBadge}>
-                            <Text style={styles.routeBadgeText}>{id}</Text>
+                    <View style={styles.routeHeader}>
+                        <View style={styles.badgeRow}>
+                            <View style={styles.routeBadge}>
+                                <Text style={styles.routeBadgeText}>{id}</Text>
+                            </View>
+                            {headsign ? (
+                                <Text style={styles.headsignText} numberOfLines={1}>
+                                    Sentido: {headsign}
+                                </Text>
+                            ) : null}
                         </View>
-                        {headsign ? (
-                            <Text style={styles.headsignText} numberOfLines={1}>
-                                Sentido: {headsign}
-                            </Text>
-                        ) : null}
+                        <Text style={styles.routeTitle} numberOfLines={2}>
+                            {longName || `Linha ${id}`}
+                        </Text>
                     </View>
-                    <Text style={styles.routeTitle} numberOfLines={2}>
-                        {longName || `Linha ${id}`}
-                    </Text>
                 </View>
 
                 <Text style={styles.sectionTitle}>
@@ -222,10 +325,24 @@ export default function BusDetailScreen() {
                 ) : (
                     // SECTION: lista do itinerário
                     <FlatList
+                        ref={flatListRef}
                         data={stops}
                         keyExtractor={(item, index) => `${item.stop_id}-${index}`}
                         contentContainerStyle={styles.listContent}
                         showsVerticalScrollIndicator={false}
+                        onScrollToIndexFailed={(info) => {
+                            flatListRef.current?.scrollToOffset({
+                                offset: info.averageItemLength * info.index,
+                                animated: true,
+                            });
+                            setTimeout(() => {
+                                flatListRef.current?.scrollToIndex({
+                                    index: info.index,
+                                    animated: true,
+                                    viewPosition: 0.3,
+                                });
+                            }, 100);
+                        }}
                         renderItem={({ item, index }) => {
                             const isFirst = index === 0;
                             const isLast = index === stops.length - 1;
@@ -238,7 +355,7 @@ export default function BusDetailScreen() {
                                         isSelected && styles.stopRowSelected,
                                         pressed && { opacity: 0.7 },
                                     ]}
-                                    onPress={() => handleFocusStopOnMap(item)}
+                                    onPress={() => handleFocusStopOnMap(item, index)}
                                 >
                                     {/* Linha do tempo vertical conectando as paradas */}
                                     <View style={styles.timelineColumn}>
@@ -277,7 +394,7 @@ export default function BusDetailScreen() {
                         }}
                     />
                 )}
-            </View>
+            </Animated.View>
         </View>
     );
 }
@@ -286,15 +403,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-    },
-    mapWrapper: {
-        height: '42%',
-        width: '100%',
-        position: 'relative',
-    },
-    map: {
-        width: '100%',
-        height: '100%',
     },
     backButton: {
         position: 'absolute',
@@ -313,29 +421,33 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
     },
     sheetContainer: {
-        flex: 1,
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: SHEET_MAX_HEIGHT,
         backgroundColor: '#fff',
-        marginTop: -20,
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         paddingHorizontal: 20,
-        paddingTop: 12,
-        elevation: 8,
+        elevation: 10,
         shadowColor: '#000',
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.12,
         shadowRadius: 8,
-        shadowOffset: { width: 0, height: -2 },
+        shadowOffset: { width: 0, height: -3 },
+    },
+    handleTouchArea: {
+        paddingVertical: 12,
+        alignItems: 'center',
     },
     dragHandle: {
-        width: 40,
-        height: 4,
-        borderRadius: 2,
-        backgroundColor: '#D1D5DB',
-        alignSelf: 'center',
-        marginBottom: 14,
+        width: 44,
+        height: 5,
+        borderRadius: 3,
+        backgroundColor: '#CBD5E1',
     },
     routeHeader: {
-        marginBottom: 16,
+        marginBottom: 14,
         borderBottomWidth: 1,
         borderBottomColor: '#F0F0F0',
         paddingBottom: 12,
@@ -375,7 +487,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     listContent: {
-        paddingBottom: 24,
+        paddingBottom: 32,
     },
     stopRow: {
         flexDirection: 'row',
