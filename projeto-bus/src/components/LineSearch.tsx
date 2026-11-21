@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { ThemedText } from "@/components/themed-text";
 import { BACK4APP_CONFIG } from "@/config/back4app";
 import { BusSearchBar } from "@/components/BusSearchBar";
@@ -33,18 +34,20 @@ const BAIRROS_RAPIDOS = [
 ];
 
 export function LineSearch() {
+  const router = useRouter();
   const [linhas, setLinhas] = useState<BusRoute[]>([]);
   const [busca, setBusca] = useState("");
   const [bairroSelecionado, setBairroSelecionado] = useState("Todos");
   const [loading, setLoading] = useState(true);
+  const [openingRouteId, setOpeningRouteId] = useState<string | null>(null);
 
-  // 1. Busca as linhas cadastradas no Back4App
+  // 1. Busca TODAS as linhas cadastradas no Back4App (limite máximo de 1000)
   useEffect(() => {
     async function carregarLinhas() {
       setLoading(true);
       try {
         const response = await fetch(
-          `${BACK4APP_CONFIG.baseUrl}/classes/Routes?limit=100`,
+          `${BACK4APP_CONFIG.baseUrl}/classes/Routes?limit=1000&order=route_short_name`,
           {
             headers: {
               "X-Parse-Application-Id": BACK4APP_CONFIG.appId,
@@ -65,6 +68,48 @@ export function LineSearch() {
 
     carregarLinhas();
   }, []);
+
+  // Ao clicar na linha, busca uma viagem (tripId) e abre a tela de itinerário/detalhes
+  const handleSelectRoute = async (item: BusRoute) => {
+    setOpeningRouteId(item.route_id);
+    try {
+      const whereQuery = { route_id: item.route_id };
+      const res = await fetch(
+        `${BACK4APP_CONFIG.baseUrl}/classes/Trips?where=${encodeURIComponent(
+          JSON.stringify(whereQuery)
+        )}&limit=1`,
+        {
+          headers: {
+            "X-Parse-Application-Id": BACK4APP_CONFIG.appId,
+            "X-Parse-REST-API-Key": BACK4APP_CONFIG.restKey,
+          },
+        }
+      );
+      const data = await res.json();
+      const trip = data.results?.[0];
+
+      router.push({
+        pathname: `/route/${item.route_id}` as any,
+        params: {
+          id: item.route_id,
+          longName: item.route_long_name,
+          headsign: trip?.trip_headsign || item.route_long_name,
+          tripId: trip?.trip_id || "",
+        },
+      });
+    } catch (err) {
+      console.error("Erro ao abrir rota:", err);
+      router.push({
+        pathname: `/route/${item.route_id}` as any,
+        params: {
+          id: item.route_id,
+          longName: item.route_long_name,
+        },
+      });
+    } finally {
+      setOpeningRouteId(null);
+    }
+  };
 
   // 2. Filtro em tempo real combinando: Número, Nome e Bairros (Origem/Destino)
   const linhasFiltradas = linhas.filter((item) => {
@@ -181,20 +226,31 @@ export function LineSearch() {
               item.route_long_name,
             );
             return (
-              <View style={styles.card}>
+              <TouchableOpacity
+                style={styles.card}
+                onPress={() => handleSelectRoute(item)}
+                activeOpacity={0.7}
+              >
                 <View style={styles.cardTopRow}>
                   <View style={styles.badgeNumero}>
                     <ThemedText style={styles.badgeNumeroText}>
                       {item.route_short_name}
                     </ThemedText>
                   </View>
-                  {item.agency_id && (
-                    <View style={styles.badgeAgencia}>
-                      <ThemedText style={styles.badgeAgenciaText}>
-                        {item.agency_id}
-                      </ThemedText>
-                    </View>
-                  )}
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    {item.agency_id && (
+                      <View style={styles.badgeAgencia}>
+                        <ThemedText style={styles.badgeAgenciaText}>
+                          {item.agency_id}
+                        </ThemedText>
+                      </View>
+                    )}
+                    {openingRouteId === item.route_id ? (
+                      <ActivityIndicator size="small" color="#27ae60" />
+                    ) : (
+                      <Ionicons name="chevron-forward" size={16} color="#aaa" />
+                    )}
+                  </View>
                 </View>
 
                 <ThemedText style={styles.routeFullName}>
@@ -223,7 +279,7 @@ export function LineSearch() {
                     </ThemedText>
                   </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             );
           }}
         />
