@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, ActivityIndicator, Text, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, ActivityIndicator, Text, Image, Platform } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { BACK4APP_CONFIG } from '@/config/back4app';
 
 // limite mínimo de 1km em graus de latitude (1000m / 111111m =~ 0.009)
@@ -20,13 +21,20 @@ export function BusMap() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    // Região inicial centralizada em Bairro Novo (Olinda)
+    // Região inicial centralizada em Bairro Novo (Olinda) com zoom suficiente para exibir paradas (< 0.009)
     const initialRegion: Region = {
         latitude: -8.000402,
         longitude: -34.839964,
-        latitudeDelta: 0.02,
-        longitudeDelta: 0.02,
+        latitudeDelta: 0.008,
+        longitudeDelta: 0.008,
     };
+
+    // Carrega as paradas logo ao abrir a tela no celular
+    useEffect(() => {
+        if (Platform.OS !== 'web') {
+            handleRegionChangeComplete(initialRegion);
+        }
+    }, []);
 
     // Função chamada sempre que o usuário solta o mapa ou termina o zoom
     const handleRegionChangeComplete = async (region: Region) => {
@@ -65,7 +73,6 @@ export function BusMap() {
             const data = await response.json();
             if (data.results) {
                 setStops(data.results);
-                console.log(data.results);
             }
         } catch (error) {
             console.error('Erro ao buscar paradas da região:', error);
@@ -73,6 +80,24 @@ export function BusMap() {
             setLoading(false);
         }
     };
+
+    // Fallback amigável caso o usuário abra no navegador Web (PC)
+    if (Platform.OS === 'web') {
+        return (
+            <View style={[styles.container, styles.webFallbackContainer]}>
+                <Ionicons name="map" size={56} color="#27ae60" />
+                <Text style={styles.webFallbackTitle}>Mapa Interativo (Recife/Olinda)</Text>
+                <Text style={styles.webFallbackText}>
+                    O mapa utiliza a biblioteca nativa Google Maps/Apple Maps do dispositivo móvel. Abra o app no celular pelo Expo Go para ver todas as paradas interativas em tempo real!
+                </Text>
+                <View style={styles.webTipBox}>
+                    <Text style={styles.webTipText}>
+                        💡 Dica: A aba "Linhas" funciona 100% no navegador!
+                    </Text>
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -94,7 +119,7 @@ export function BusMap() {
                             onPress={(e) => {
                                 e.stopPropagation(); //evita comportamento padrão do mapa
                                 router.push({
-                                    pathname: `/stop/${stop.objectId}`,
+                                    pathname: `/stop/${stop.objectId}` as any,
                                     params: {
                                         name: stop.stop_name,
                                         stopId: stop.stop_id
@@ -163,6 +188,40 @@ const styles = StyleSheet.create({
     hintText: {
         color: '#fff',
         fontSize: 12,
+        fontWeight: '600',
+    },
+    webFallbackContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+        backgroundColor: '#f8f9fa',
+    },
+    webFallbackTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#222',
+        marginTop: 12,
+    },
+    webFallbackText: {
+        fontSize: 13,
+        color: '#666',
+        textAlign: 'center',
+        marginTop: 8,
+        maxWidth: 340,
+        lineHeight: 18,
+    },
+    webTipBox: {
+        marginTop: 20,
+        backgroundColor: '#e8f8f0',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#a3e4d7',
+    },
+    webTipText: {
+        fontSize: 12,
+        color: '#1e8449',
         fontWeight: '600',
     },
 });
