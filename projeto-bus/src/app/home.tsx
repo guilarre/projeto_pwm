@@ -69,6 +69,18 @@ export default function HomeScreen() {
               {abaAtiva === "favoritos" && "Linhas Favoritas"}
               {abaAtiva === "perfil" && "Perfil do Utilizador"}
             </ThemedText>
+
+            {/* Botão (i) no canto superior direito para abrir a tela de Sobre */}
+            <TouchableOpacity
+              onPress={() => router.push("/about" as any)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons
+                name="information-circle-outline"
+                size={24}
+                color="#27ae60"
+              />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.content}>
@@ -339,6 +351,9 @@ const styles = StyleSheet.create({
   },
   safeArea: { flex: 1 },
   header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
     backgroundColor: "#ffffff",
     borderBottomWidth: 1,

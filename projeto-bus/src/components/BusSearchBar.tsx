@@ -13,7 +13,7 @@ export function BusSearchBar({
   value,
   onChangeText,
   onClear,
-  placeholder = "Buscar por número (ex: 030) ou nome do bus...",
+  placeholder = "Buscar por número (ex: 030) ou nome do ônibus...",
 }: BusSearchBarProps) {
   return (
     <View style={styles.container}>
