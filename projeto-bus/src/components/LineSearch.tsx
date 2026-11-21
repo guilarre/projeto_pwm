@@ -44,7 +44,7 @@ export function LineSearch() {
       setLoading(true);
       try {
         const response = await fetch(
-          `${BACK4APP_CONFIG.baseUrl}/classes/Routes?limit=100`,
+          `${BACK4APP_CONFIG.baseUrl}/classes/Routes?limit=1000&order=route_short_name`,
           {
             headers: {
               "X-Parse-Application-Id": BACK4APP_CONFIG.appId,
