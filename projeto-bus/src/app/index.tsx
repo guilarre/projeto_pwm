@@ -1,6 +1,5 @@
-import React from 'react';
-import { BusMap } from '@/components/BusMap';
+import { Redirect } from 'expo-router';
 
-export default function HomeScreen() {
-    return <BusMap />;
+export default function Index() {
+    return <Redirect href="/home" />;
 }
