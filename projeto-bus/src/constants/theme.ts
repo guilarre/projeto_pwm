@@ -63,3 +63,39 @@ export const Spacing = {
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+export const BusTheme = {
+  colors: {
+    // Base & Superfícies (60%)
+    background: '#F8F9FA',
+    surface: '#FFFFFF',
+    surfaceMuted: '#F1F5F9',
+    border: '#E2E8F0',
+    borderSubtle: '#F1F5F9',
+
+    // Texto & Estrutura (30%)
+    textPrimary: '#1E293B',
+    textSecondary: '#475569',
+    textMuted: '#64748B',
+    badgeNeutral: '#334155',
+
+    // Cor da Marca / Ação (10% - Laranja queimado)
+    brand: '#EA580C',
+    brandSoft: '#FFF7ED',
+    brandText: '#FFFFFF',
+
+    // Semântica Funcional
+    live: '#16A34A',
+    liveSoft: '#F0FDF4',
+    favorite: '#EAB308',
+    danger: '#DC2626',
+    dangerSoft: '#FEF2F2',
+  },
+  radius: {
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 24,
+    full: 999,
+  },
+} as const;

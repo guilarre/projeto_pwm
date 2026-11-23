@@ -16,7 +16,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BACK4APP_CONFIG } from '@/config/back4app';
 import { useFavorites } from '@/hooks/useFavorites';
+import { BusTheme } from '@/constants/theme';
 
+const { colors, radius } = BusTheme;
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Alturas do painel inferior (expandido vs recolhido)
@@ -232,7 +234,7 @@ export default function BusDetailScreen() {
                 {shapes.length > 0 && (
                     <Polyline
                         coordinates={shapes}
-                        strokeColor="#007AFF"
+                        strokeColor={colors.brand}
                         strokeWidth={4}
                     />
                 )}
@@ -269,7 +271,7 @@ export default function BusDetailScreen() {
                 style={({ pressed }) => [styles.backButton, pressed && { opacity: 0.8 }]}
                 onPress={() => router.back()}
             >
-                <Ionicons name="arrow-back" size={24} color="#111" />
+                <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
             </Pressable>
 
             {/* PAINEL INFERIOR ARRASTÁVEL */}
@@ -301,6 +303,7 @@ export default function BusDetailScreen() {
                             <Pressable
                                 style={({ pressed }) => [
                                     styles.favoriteButton,
+                                    favorited && styles.favoriteButtonActive,
                                     pressed && { opacity: 0.7 },
                                 ]}
                                 onPress={() =>
@@ -314,8 +317,8 @@ export default function BusDetailScreen() {
                             >
                                 <Ionicons
                                     name={favorited ? 'star' : 'star-outline'}
-                                    size={24}
-                                    color={favorited ? '#f1c40f' : '#888'}
+                                    size={22}
+                                    color={favorited ? colors.favorite : colors.textMuted}
                                 />
                             </Pressable>
                         </View>
@@ -330,7 +333,7 @@ export default function BusDetailScreen() {
                 </Text>
 
                 {loading ? (
-                    <ActivityIndicator size="large" color="#007AFF" style={{ marginTop: 32 }} />
+                    <ActivityIndicator size="large" color={colors.brand} style={{ marginTop: 32 }} />
                 ) : stops.length === 0 ? (
                     <View style={styles.emptyContainer}>
                         <Text style={styles.emptyText}>
@@ -414,7 +417,7 @@ export default function BusDetailScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: colors.surface,
     },
     backButton: {
         position: 'absolute',
@@ -422,8 +425,8 @@ const styles = StyleSheet.create({
         left: 16,
         width: 44,
         height: 44,
-        borderRadius: 22,
-        backgroundColor: '#fff',
+        borderRadius: radius.full,
+        backgroundColor: colors.surface,
         justifyContent: 'center',
         alignItems: 'center',
         elevation: 4,
@@ -438,9 +441,9 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: SHEET_MAX_HEIGHT,
-        backgroundColor: '#fff',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
+        backgroundColor: colors.surface,
+        borderTopLeftRadius: radius.xl,
+        borderTopRightRadius: radius.xl,
         paddingHorizontal: 20,
         elevation: 10,
         shadowColor: '#000',
@@ -456,12 +459,12 @@ const styles = StyleSheet.create({
         width: 44,
         height: 5,
         borderRadius: 3,
-        backgroundColor: '#CBD5E1',
+        backgroundColor: colors.border,
     },
     routeHeader: {
         marginBottom: 14,
         borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+        borderBottomColor: colors.borderSubtle,
         paddingBottom: 12,
     },
     badgeRow: {
@@ -471,36 +474,42 @@ const styles = StyleSheet.create({
         gap: 10,
     },
     routeBadge: {
-        backgroundColor: '#6B7280',
+        backgroundColor: colors.badgeNeutral,
         paddingHorizontal: 14,
         paddingVertical: 4,
-        borderRadius: 16,
+        borderRadius: radius.full,
     },
     routeBadgeText: {
-        color: '#fff',
+        color: colors.brandText,
         fontWeight: 'bold',
         fontSize: 15,
     },
     headsignText: {
         fontSize: 13,
-        color: '#666',
+        color: colors.textMuted,
         fontWeight: '500',
         flex: 1,
     },
     favoriteButton: {
-        padding: 6,
-        borderRadius: 20,
-        backgroundColor: '#F8F9FA',
+        width: 38,
+        height: 38,
+        borderRadius: radius.full,
+        backgroundColor: colors.surfaceMuted,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    favoriteButtonActive: {
+        backgroundColor: '#FEF9C3',
     },
     routeTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#111',
+        color: colors.textPrimary,
     },
     sectionTitle: {
         fontSize: 16,
         fontWeight: '700',
-        color: '#222',
+        color: colors.textPrimary,
         marginBottom: 8,
     },
     listContent: {
@@ -510,10 +519,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'stretch',
         paddingHorizontal: 8,
-        borderRadius: 8,
+        borderRadius: radius.sm,
     },
     stopRowSelected: {
-        backgroundColor: '#F0F7FF',
+        backgroundColor: colors.brandSoft,
     },
     timelineColumn: {
         width: 24,
@@ -523,51 +532,51 @@ const styles = StyleSheet.create({
     timelineLineTop: {
         width: 2,
         flex: 1,
-        backgroundColor: '#CBD5E1',
+        backgroundColor: colors.border,
     },
     timelineLineBottom: {
         width: 2,
         flex: 1,
-        backgroundColor: '#CBD5E1',
+        backgroundColor: colors.border,
     },
     timelineDot: {
         width: 10,
         height: 10,
         borderRadius: 5,
-        backgroundColor: '#94A3B8',
+        backgroundColor: colors.textMuted,
     },
     timelineDotEndpoint: {
         width: 12,
         height: 12,
         borderRadius: 6,
-        backgroundColor: '#007AFF',
+        backgroundColor: colors.brand,
     },
     timelineDotSelected: {
-        backgroundColor: '#FF3B30',
-        transform: [{ scale: 1.2 }],
+        backgroundColor: colors.brand,
+        transform: [{ scale: 1.25 }],
     },
     stopInfo: {
         flex: 1,
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
+        borderBottomColor: colors.borderSubtle,
     },
     stopAddress: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#222',
+        color: colors.textPrimary,
         marginBottom: 2,
     },
     stopCode: {
         fontSize: 12,
-        color: '#777',
+        color: colors.textMuted,
     },
     emptyContainer: {
         marginTop: 32,
         alignItems: 'center',
     },
     emptyText: {
-        color: '#888',
+        color: colors.textMuted,
         fontSize: 14,
     },
 });
