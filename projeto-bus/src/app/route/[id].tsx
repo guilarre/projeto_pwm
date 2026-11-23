@@ -13,8 +13,9 @@ import {
 } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons'; // CHECK: ver se mantemos assim ou com o definido no figma
+import { Ionicons } from '@expo/vector-icons';
 import { BACK4APP_CONFIG } from '@/config/back4app';
+import { useFavorites } from '@/hooks/useFavorites';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -49,8 +50,11 @@ export default function BusDetailScreen() {
     }>();
 
     const router = useRouter();
+    const { isFavorite, toggleFavorite } = useFavorites();
+    const favorited = isFavorite(String(id));
+
     const mapRef = useRef<MapView | null>(null);
-    const flatListRef = useRef<FlatList<ItineraryStop> | null>(null); //ref pra retornarmos depois à parada selecionada na FlatList
+    const flatListRef = useRef<FlatList<ItineraryStop> | null>(null);
     const markerRefs = useRef<Record<string, React.ComponentRef<typeof Marker> | null>>({});
 
     const [stops, setStops] = useState<ItineraryStop[]>([]);
@@ -72,7 +76,6 @@ export default function BusDetailScreen() {
     ) => {
         if (!mapRef.current) return;
 
-        // Enquadra automaticamente o traçado ou as paradas na tela
         const coordsToFit =
             currentShapes.length > 0
                 ? currentShapes
@@ -86,7 +89,6 @@ export default function BusDetailScreen() {
         if (coordsToFit.length > 0) {
             const bottomPadding = isSheetOpen ? SHEET_MAX_HEIGHT + 30 : SHEET_MIN_HEIGHT + 30;
             mapRef.current.fitToCoordinates(coordsToFit, {
-                // Compensa a altura do painel expandido para centralizar a rota na área visível
                 edgePadding: {
                     top: 90,
                     right: 50,
@@ -110,17 +112,14 @@ export default function BusDetailScreen() {
         fitRouteToMap(toValue === 0);
     };
 
-    // Alterna entre expandido e recolhido com um toque simples no handle
     const toggleSheet = () => {
         const nextTarget = lastOffset.current === 0 ? MAX_TRANSLATE_Y : 0;
         animateSheetTo(nextTarget);
     };
 
-    // Controla o arraste vertical na área do handle/cabeçalho
     const panResponder = useRef(
         PanResponder.create({
             onMoveShouldSetPanResponder: (_, gestureState) => {
-                // Ativa o arraste apenas se o movimento vertical for intencional
                 return Math.abs(gestureState.dy) > 6 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
             },
             onPanResponderMove: (_, gestureState) => {
@@ -131,7 +130,6 @@ export default function BusDetailScreen() {
             onPanResponderRelease: (_, gestureState) => {
                 const currentY = lastOffset.current + gestureState.dy;
 
-                // Se puxou rápido para baixo ou passou da metade do caminho, recolhe
                 if (gestureState.vy > 0.5 || (gestureState.vy >= -0.5 && currentY > MAX_TRANSLATE_Y / 2)) {
                     animateSheetTo(MAX_TRANSLATE_Y);
                 } else {
@@ -188,7 +186,6 @@ export default function BusDetailScreen() {
         fetchItinerary();
     }, [tripId]);
 
-    // Formata o endereço longo do Nominatim até a 2ª vírgula
     const formatShortAddress = (rawAddress: string) => {
         if (!rawAddress) return 'Endereço não mapeado';
         const parts = rawAddress.split(',');
@@ -208,13 +205,11 @@ export default function BusDetailScreen() {
             viewPosition: 0.3,
         });
 
-        // Aguarda o clique nativo do Google Maps finalizar antes de enquadrar na área superior
         setTimeout(() => {
             fitRouteToMap(true);
         }, 150);
     };
 
-    // Centraliza o mapa ao clicar em uma parada da lista
     const handleFocusStopOnMap = (stop: ItineraryStop, index: number) => {
         setSelectedStopId(stop.stop_id);
         markerRefs.current[`${stop.stop_id}-${index}`]?.showCallout();
@@ -234,7 +229,6 @@ export default function BusDetailScreen() {
                     longitudeDelta: 0.08,
                 }}
             >
-                {/* Linha do trajeto (se houver pontos na tabela Shapes) */}
                 {shapes.length > 0 && (
                     <Polyline
                         coordinates={shapes}
@@ -243,7 +237,6 @@ export default function BusDetailScreen() {
                     />
                 )}
 
-                {/* Marcadores de todas as paradas do itinerário */}
                 {stops.map((stop, index) => {
                     if (!stop.location) return null;
                     const latitude = Number(stop.location.latitude);
@@ -271,7 +264,7 @@ export default function BusDetailScreen() {
                 })}
             </MapView>
 
-            {/* SECTION: Botão flutuante de Voltar */}
+            {/* Botão flutuante de Voltar */}
             <Pressable
                 style={({ pressed }) => [styles.backButton, pressed && { opacity: 0.8 }]}
                 onPress={() => router.back()}
@@ -286,13 +279,12 @@ export default function BusDetailScreen() {
                     { transform: [{ translateY }] },
                 ]}
             >
-                {/* Zona sensível ao arraste e ao toque (Handle + Cabeçalho da linha) */}
                 <View {...panResponder.panHandlers}>
                     <Pressable style={styles.handleTouchArea} onPress={toggleSheet}>
                         <View style={styles.dragHandle} />
                     </Pressable>
 
-                {/* Cabeçalho da linha */}
+                    {/* Cabeçalho da linha com botão de Favoritar */}
                     <View style={styles.routeHeader}>
                         <View style={styles.badgeRow}>
                             <View style={styles.routeBadge}>
@@ -302,7 +294,30 @@ export default function BusDetailScreen() {
                                 <Text style={styles.headsignText} numberOfLines={1}>
                                     Sentido: {headsign}
                                 </Text>
-                            ) : null}
+                            ) : (
+                                <View style={{ flex: 1 }} />
+                            )}
+
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.favoriteButton,
+                                    pressed && { opacity: 0.7 },
+                                ]}
+                                onPress={() =>
+                                    toggleFavorite({
+                                        routeId: String(id),
+                                        nome: longName || `Linha ${id}`,
+                                        headsign: headsign || '',
+                                        tripId: tripId || '',
+                                    })
+                                }
+                            >
+                                <Ionicons
+                                    name={favorited ? 'star' : 'star-outline'}
+                                    size={24}
+                                    color={favorited ? '#f1c40f' : '#888'}
+                                />
+                            </Pressable>
                         </View>
                         <Text style={styles.routeTitle} numberOfLines={2}>
                             {longName || `Linha ${id}`}
@@ -323,7 +338,6 @@ export default function BusDetailScreen() {
                         </Text>
                     </View>
                 ) : (
-                    // SECTION: lista do itinerário
                     <FlatList
                         ref={flatListRef}
                         data={stops}
@@ -357,7 +371,6 @@ export default function BusDetailScreen() {
                                     ]}
                                     onPress={() => handleFocusStopOnMap(item, index)}
                                 >
-                                    {/* Linha do tempo vertical conectando as paradas */}
                                     <View style={styles.timelineColumn}>
                                         <View
                                             style={[
@@ -380,7 +393,6 @@ export default function BusDetailScreen() {
                                         />
                                     </View>
 
-                                    {/* Informações da parada */}
                                     <View style={styles.stopInfo}>
                                         <Text style={styles.stopAddress} numberOfLines={2}>
                                             {formatShortAddress(item.address)}
@@ -474,6 +486,11 @@ const styles = StyleSheet.create({
         color: '#666',
         fontWeight: '500',
         flex: 1,
+    },
+    favoriteButton: {
+        padding: 6,
+        borderRadius: 20,
+        backgroundColor: '#F8F9FA',
     },
     routeTitle: {
         fontSize: 20,

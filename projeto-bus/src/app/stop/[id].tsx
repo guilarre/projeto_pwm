@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, ActivityIndicator, FlatList, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { BACK4APP_CONFIG } from '@/config/back4app';
 import ClockIcon from '../../../assets/figma.icons/clock-icon.svg';
 
@@ -81,6 +82,16 @@ export default function BusStopScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Barra superior com botão de voltar no canto superior esquerdo */}
+      <View style={styles.topBar}>
+        <Pressable
+          style={({ pressed }) => [styles.backButton, pressed && { opacity: 0.8 }]}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#111" />
+        </Pressable>
+      </View>
+
       {/* Cabeçalho com os dados da parada */}
       <View style={styles.header}>
         <Text style={styles.title}>Parada {stopId}</Text>
@@ -110,7 +121,6 @@ export default function BusStopScreen() {
               style={({ pressed }) => [
                 styles.busCard,
                 pressed && { opacity: 0.2, backgroundColor: '#000000' }
-                // TEST: pressed && { opacity: 0.7, backgroundColor: '#f1f3f5' } // Feedback visual ao tocar
               ]}
               onPress={() => {
                 router.push({
@@ -123,17 +133,15 @@ export default function BusStopScreen() {
                 });
               }}
             >
-              {/* TODO: parei aqui.. é p tirar o busCardContent agora.. */}
               <View style={styles.busInfoLeft}>
                 <Text style={styles.busNumber}>{item.route_id}</Text>
                 <Text style={styles.busTime}>
-                  <ClockIcon width={10} height={10} fill="#fff" />{/*TEST: #555*/}
+                  <ClockIcon width={10} height={10} fill="#fff" />
                   {' '}{item.arrival_time ? item.arrival_time.substring(0, 5) : '--:--'}
                 </Text>
               </View>
               <Text style={styles.busName} numberOfLines={2}>
                 {item.route_long_name}
-                {/* CHECK: talvez precise deixar scrollable, scrollando automaticamente backnforth */}
                 {item.trip_headsign !== undefined && item.trip_headsign !== null && (
                   <Text style={styles.tripHeadsignText}> ({item.trip_headsign})</Text>
                 )}
@@ -151,7 +159,25 @@ const styles = StyleSheet.create({
     flex: 1, 
     backgroundColor: '#f8f9fa', 
     paddingHorizontal: 16,
-    paddingTop: 16 
+    paddingTop: 48,
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
   header: {
     backgroundColor: '#fff',
@@ -171,7 +197,7 @@ const styles = StyleSheet.create({
   },
   subtitle: { 
     fontSize: 14, 
-    color: '#666', /* TEST: o gemini deixou como #444... */
+    color: '#666',
     lineHeight: 18,
   },
   sectionTitle: { 
