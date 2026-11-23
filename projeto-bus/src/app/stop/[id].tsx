@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
   },
   header: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.brand,
     padding: 16,
     borderRadius: radius.md,
     borderWidth: 1,
@@ -185,12 +185,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: colors.liveSoft,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: colors.liveSoft,
     lineHeight: 18,
   },
   sectionTitle: {

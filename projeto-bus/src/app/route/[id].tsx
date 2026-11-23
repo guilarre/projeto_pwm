@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
         gap: 10,
     },
     routeBadge: {
-        backgroundColor: colors.badgeNeutral,
+        backgroundColor: colors.brand,
         paddingHorizontal: 14,
         paddingVertical: 4,
         borderRadius: radius.full,

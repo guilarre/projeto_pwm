@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, ScrollView, TextInput, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -53,9 +53,12 @@ export default function HomeScreen() {
             {abaAtiva === 'favoritos' && (
               <ScrollView style={styles.tabScrollContent} contentContainerStyle={{ gap: 12 }}>
                 {favorites.map((item) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={item.routeId}
-                    style={styles.card}
+                    style={({ pressed }) => [
+                      styles.card,
+                      pressed && styles.cardPressed,
+                    ]}
                     onPress={() => {
                       if (item.tripId) {
                         router.push({
@@ -88,7 +91,7 @@ export default function HomeScreen() {
                         <Ionicons name="star" size={20} color={colors.favorite} />
                       </TouchableOpacity>
                     </View>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
                 {favorites.length === 0 && (
                   <View style={styles.emptyContainer}>
@@ -209,10 +212,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  cardPressed: {
+    backgroundColor: colors.brandSoft,
+  },
   cardTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   cardBottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   routeBadge: {
-    backgroundColor: colors.badgeNeutral,
+    backgroundColor: colors.brand,
     paddingHorizontal: 12,
     paddingVertical: 3,
     borderRadius: radius.full,
