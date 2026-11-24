@@ -114,7 +114,7 @@ export default function BusStopScreen() {
               ]}
               onPress={() => {
                 router.push({
-                  pathname: `/route/${item.route_id}`,
+                  pathname: `/route/${item.route_id}` as any,
                   params: {
                     longName: item.route_long_name,
                     headsign: item.trip_headsign || '',
