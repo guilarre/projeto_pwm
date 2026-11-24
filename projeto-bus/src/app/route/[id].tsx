@@ -13,9 +13,12 @@ import {
 } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons'; // CHECK: ver se mantemos assim ou com o definido no figma
+import { Ionicons } from '@expo/vector-icons';
 import { BACK4APP_CONFIG } from '@/config/back4app';
+import { useFavorites } from '@/hooks/useFavorites';
+import { BusTheme } from '@/constants/theme';
 
+const { colors, radius } = BusTheme;
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Alturas do painel inferior (expandido vs recolhido)
@@ -49,8 +52,11 @@ export default function BusDetailScreen() {
     }>();
 
     const router = useRouter();
+    const { isFavorite, toggleFavorite } = useFavorites();
+    const favorited = isFavorite(String(id));
+
     const mapRef = useRef<MapView | null>(null);
-    const flatListRef = useRef<FlatList<ItineraryStop> | null>(null); //ref pra retornarmos depois à parada selecionada na FlatList
+    const flatListRef = useRef<FlatList<ItineraryStop> | null>(null);
     const markerRefs = useRef<Record<string, React.ComponentRef<typeof Marker> | null>>({});
 
     const [stops, setStops] = useState<ItineraryStop[]>([]);
@@ -72,7 +78,6 @@ export default function BusDetailScreen() {
     ) => {
         if (!mapRef.current) return;
 
-        // Enquadra automaticamente o traçado ou as paradas na tela
         const coordsToFit =
             currentShapes.length > 0
                 ? currentShapes
@@ -86,7 +91,6 @@ export default function BusDetailScreen() {
         if (coordsToFit.length > 0) {
             const bottomPadding = isSheetOpen ? SHEET_MAX_HEIGHT + 30 : SHEET_MIN_HEIGHT + 30;
             mapRef.current.fitToCoordinates(coordsToFit, {
-                // Compensa a altura do painel expandido para centralizar a rota na área visível
                 edgePadding: {
                     top: 90,
                     right: 50,
@@ -110,17 +114,14 @@ export default function BusDetailScreen() {
         fitRouteToMap(toValue === 0);
     };
 
-    // Alterna entre expandido e recolhido com um toque simples no handle
     const toggleSheet = () => {
         const nextTarget = lastOffset.current === 0 ? MAX_TRANSLATE_Y : 0;
         animateSheetTo(nextTarget);
     };
 
-    // Controla o arraste vertical na área do handle/cabeçalho
     const panResponder = useRef(
         PanResponder.create({
             onMoveShouldSetPanResponder: (_, gestureState) => {
-                // Ativa o arraste apenas se o movimento vertical for intencional
                 return Math.abs(gestureState.dy) > 6 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
             },
             onPanResponderMove: (_, gestureState) => {
@@ -131,7 +132,6 @@ export default function BusDetailScreen() {
             onPanResponderRelease: (_, gestureState) => {
                 const currentY = lastOffset.current + gestureState.dy;
 
-                // Se puxou rápido para baixo ou passou da metade do caminho, recolhe
                 if (gestureState.vy > 0.5 || (gestureState.vy >= -0.5 && currentY > MAX_TRANSLATE_Y / 2)) {
                     animateSheetTo(MAX_TRANSLATE_Y);
                 } else {
@@ -188,7 +188,6 @@ export default function BusDetailScreen() {
         fetchItinerary();
     }, [tripId]);
 
-    // Formata o endereço longo do Nominatim até a 2ª vírgula
     const formatShortAddress = (rawAddress: string) => {
         if (!rawAddress) return 'Endereço não mapeado';
         const parts = rawAddress.split(',');
@@ -208,13 +207,11 @@ export default function BusDetailScreen() {
             viewPosition: 0.3,
         });
 
-        // Aguarda o clique nativo do Google Maps finalizar antes de enquadrar na área superior
         setTimeout(() => {
             fitRouteToMap(true);
         }, 150);
     };
 
-    // Centraliza o mapa ao clicar em uma parada da lista
     const handleFocusStopOnMap = (stop: ItineraryStop, index: number) => {
         setSelectedStopId(stop.stop_id);
         markerRefs.current[`${stop.stop_id}-${index}`]?.showCallout();
@@ -234,16 +231,14 @@ export default function BusDetailScreen() {
                     longitudeDelta: 0.08,
                 }}
             >
-                {/* Linha do trajeto (se houver pontos na tabela Shapes) */}
                 {shapes.length > 0 && (
                     <Polyline
                         coordinates={shapes}
-                        strokeColor="#007AFF"
+                        strokeColor={colors.brand}
                         strokeWidth={4}
                     />
                 )}
 
-                {/* Marcadores de todas as paradas do itinerário */}
                 {stops.map((stop, index) => {
                     if (!stop.location) return null;
                     const latitude = Number(stop.location.latitude);
@@ -271,12 +266,12 @@ export default function BusDetailScreen() {
                 })}
             </MapView>
 
-            {/* SECTION: Botão flutuante de Voltar */}
+            {/* Botão flutuante de Voltar */}
             <Pressable
                 style={({ pressed }) => [styles.backButton, pressed && { opacity: 0.8 }]}
                 onPress={() => router.back()}
             >
-                <Ionicons name="arrow-back" size={24} color="#111" />
+                <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
             </Pressable>
 
             {/* PAINEL INFERIOR ARRASTÁVEL */}
@@ -286,13 +281,12 @@ export default function BusDetailScreen() {
                     { transform: [{ translateY }] },
                 ]}
             >
-                {/* Zona sensível ao arraste e ao toque (Handle + Cabeçalho da linha) */}
                 <View {...panResponder.panHandlers}>
                     <Pressable style={styles.handleTouchArea} onPress={toggleSheet}>
                         <View style={styles.dragHandle} />
                     </Pressable>
 
-                {/* Cabeçalho da linha */}
+                    {/* Cabeçalho da linha com botão de Favoritar */}
                     <View style={styles.routeHeader}>
                         <View style={styles.badgeRow}>
                             <View style={styles.routeBadge}>
@@ -302,7 +296,31 @@ export default function BusDetailScreen() {
                                 <Text style={styles.headsignText} numberOfLines={1}>
                                     Sentido: {headsign}
                                 </Text>
-                            ) : null}
+                            ) : (
+                                <View style={{ flex: 1 }} />
+                            )}
+
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.favoriteButton,
+                                    favorited && styles.favoriteButtonActive,
+                                    pressed && { opacity: 0.7 },
+                                ]}
+                                onPress={() =>
+                                    toggleFavorite({
+                                        routeId: String(id),
+                                        nome: longName || `Linha ${id}`,
+                                        headsign: headsign || '',
+                                        tripId: tripId || '',
+                                    })
+                                }
+                            >
+                                <Ionicons
+                                    name={favorited ? 'star' : 'star-outline'}
+                                    size={22}
+                                    color={favorited ? colors.favorite : colors.textMuted}
+                                />
+                            </Pressable>
                         </View>
                         <Text style={styles.routeTitle} numberOfLines={2}>
                             {longName || `Linha ${id}`}
@@ -315,7 +333,7 @@ export default function BusDetailScreen() {
                 </Text>
 
                 {loading ? (
-                    <ActivityIndicator size="large" color="#007AFF" style={{ marginTop: 32 }} />
+                    <ActivityIndicator size="large" color={colors.brand} style={{ marginTop: 32 }} />
                 ) : stops.length === 0 ? (
                     <View style={styles.emptyContainer}>
                         <Text style={styles.emptyText}>
@@ -323,7 +341,6 @@ export default function BusDetailScreen() {
                         </Text>
                     </View>
                 ) : (
-                    // SECTION: lista do itinerário
                     <FlatList
                         ref={flatListRef}
                         data={stops}
@@ -357,7 +374,6 @@ export default function BusDetailScreen() {
                                     ]}
                                     onPress={() => handleFocusStopOnMap(item, index)}
                                 >
-                                    {/* Linha do tempo vertical conectando as paradas */}
                                     <View style={styles.timelineColumn}>
                                         <View
                                             style={[
@@ -380,7 +396,6 @@ export default function BusDetailScreen() {
                                         />
                                     </View>
 
-                                    {/* Informações da parada */}
                                     <View style={styles.stopInfo}>
                                         <Text style={styles.stopAddress} numberOfLines={2}>
                                             {formatShortAddress(item.address)}
@@ -402,7 +417,7 @@ export default function BusDetailScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: colors.surface,
     },
     backButton: {
         position: 'absolute',
@@ -410,8 +425,8 @@ const styles = StyleSheet.create({
         left: 16,
         width: 44,
         height: 44,
-        borderRadius: 22,
-        backgroundColor: '#fff',
+        borderRadius: radius.full,
+        backgroundColor: colors.surface,
         justifyContent: 'center',
         alignItems: 'center',
         elevation: 4,
@@ -426,9 +441,9 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: SHEET_MAX_HEIGHT,
-        backgroundColor: '#fff',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
+        backgroundColor: colors.surface,
+        borderTopLeftRadius: radius.xl,
+        borderTopRightRadius: radius.xl,
         paddingHorizontal: 20,
         elevation: 10,
         shadowColor: '#000',
@@ -444,12 +459,12 @@ const styles = StyleSheet.create({
         width: 44,
         height: 5,
         borderRadius: 3,
-        backgroundColor: '#CBD5E1',
+        backgroundColor: colors.border,
     },
     routeHeader: {
         marginBottom: 14,
         borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+        borderBottomColor: colors.borderSubtle,
         paddingBottom: 12,
     },
     badgeRow: {
@@ -459,31 +474,42 @@ const styles = StyleSheet.create({
         gap: 10,
     },
     routeBadge: {
-        backgroundColor: '#6B7280',
+        backgroundColor: colors.brand,
         paddingHorizontal: 14,
         paddingVertical: 4,
-        borderRadius: 16,
+        borderRadius: radius.full,
     },
     routeBadgeText: {
-        color: '#fff',
+        color: colors.brandText,
         fontWeight: 'bold',
         fontSize: 15,
     },
     headsignText: {
         fontSize: 13,
-        color: '#666',
+        color: colors.textMuted,
         fontWeight: '500',
         flex: 1,
+    },
+    favoriteButton: {
+        width: 38,
+        height: 38,
+        borderRadius: radius.full,
+        backgroundColor: colors.surfaceMuted,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    favoriteButtonActive: {
+        backgroundColor: '#FEF9C3',
     },
     routeTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#111',
+        color: colors.textPrimary,
     },
     sectionTitle: {
         fontSize: 16,
         fontWeight: '700',
-        color: '#222',
+        color: colors.textPrimary,
         marginBottom: 8,
     },
     listContent: {
@@ -493,10 +519,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'stretch',
         paddingHorizontal: 8,
-        borderRadius: 8,
+        borderRadius: radius.sm,
     },
     stopRowSelected: {
-        backgroundColor: '#F0F7FF',
+        backgroundColor: colors.brandSoft,
     },
     timelineColumn: {
         width: 24,
@@ -506,51 +532,51 @@ const styles = StyleSheet.create({
     timelineLineTop: {
         width: 2,
         flex: 1,
-        backgroundColor: '#CBD5E1',
+        backgroundColor: colors.border,
     },
     timelineLineBottom: {
         width: 2,
         flex: 1,
-        backgroundColor: '#CBD5E1',
+        backgroundColor: colors.border,
     },
     timelineDot: {
         width: 10,
         height: 10,
         borderRadius: 5,
-        backgroundColor: '#94A3B8',
+        backgroundColor: colors.textMuted,
     },
     timelineDotEndpoint: {
         width: 12,
         height: 12,
         borderRadius: 6,
-        backgroundColor: '#007AFF',
+        backgroundColor: colors.brand,
     },
     timelineDotSelected: {
-        backgroundColor: '#FF3B30',
-        transform: [{ scale: 1.2 }],
+        backgroundColor: colors.brand,
+        transform: [{ scale: 1.25 }],
     },
     stopInfo: {
         flex: 1,
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
+        borderBottomColor: colors.borderSubtle,
     },
     stopAddress: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#222',
+        color: colors.textPrimary,
         marginBottom: 2,
     },
     stopCode: {
         fontSize: 12,
-        color: '#777',
+        color: colors.textMuted,
     },
     emptyContainer: {
         marginTop: 32,
         alignItems: 'center',
     },
     emptyText: {
-        color: '#888',
+        color: colors.textMuted,
         fontSize: 14,
     },
 });
