@@ -12,6 +12,9 @@ import { useRouter } from "expo-router";
 import { ThemedText } from "@/components/themed-text";
 import { BACK4APP_CONFIG } from "@/config/back4app";
 import { BusSearchBar } from "@/components/BusSearchBar";
+import { BusTheme } from "@/constants/theme";
+
+const { colors, radius } = BusTheme;
 
 interface BusRoute {
   objectId: string;
@@ -201,14 +204,14 @@ export function LineSearch() {
       {/* Listagem das Linhas */}
       {loading ? (
         <View style={styles.centerBox}>
-          <ActivityIndicator size="large" color="#27ae60" />
+          <ActivityIndicator size="large" color={colors.brand} />
           <ThemedText style={styles.loadingText}>
             Carregando linhas do Grande Recife...
           </ThemedText>
         </View>
       ) : linhasFiltradas.length === 0 ? (
         <View style={styles.centerBox}>
-          <Ionicons name="bus-outline" size={48} color="#ccc" />
+          <Ionicons name="bus-outline" size={48} color={colors.textMuted} />
           <ThemedText style={styles.emptyTitle}>
             Nenhuma linha encontrada
           </ThemedText>
@@ -220,6 +223,7 @@ export function LineSearch() {
         <FlatList
           data={linhasFiltradas}
           keyExtractor={(item) => item.objectId}
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 24, gap: 10 }}
           renderItem={({ item }) => {
             const { origem, destino } = separarOrigemDestino(
@@ -246,9 +250,9 @@ export function LineSearch() {
                       </View>
                     )}
                     {openingRouteId === item.route_id ? (
-                      <ActivityIndicator size="small" color="#27ae60" />
+                      <ActivityIndicator size="small" color={colors.brand} />
                     ) : (
-                      <Ionicons name="chevron-forward" size={16} color="#aaa" />
+                      <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
                     )}
                   </View>
                 </View>
@@ -262,7 +266,7 @@ export function LineSearch() {
                     <Ionicons
                       name="radio-button-on"
                       size={14}
-                      color="#27ae60"
+                      color={colors.brand}
                     />
                     <ThemedText style={styles.detailLabel}>Origem: </ThemedText>
                     <ThemedText style={styles.detailValue} numberOfLines={1}>
@@ -270,7 +274,7 @@ export function LineSearch() {
                     </ThemedText>
                   </View>
                   <View style={styles.detailRow}>
-                    <Ionicons name="location" size={14} color="#e74c3c" />
+                    <Ionicons name="location" size={14} color={colors.danger} />
                     <ThemedText style={styles.detailLabel}>
                       Destino:{" "}
                     </ThemedText>
@@ -297,27 +301,27 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: "#ffffff",
+    borderRadius: radius.full,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: colors.border,
   },
   chipActive: {
-    backgroundColor: "#27ae60",
-    borderColor: "#27ae60",
+    backgroundColor: colors.brand,
+    borderColor: colors.brand,
   },
   chipText: {
     fontSize: 12,
-    color: "#666",
+    color: colors.textSecondary,
     fontWeight: "500",
   },
   chipTextActive: {
-    color: "#ffffff",
+    color: colors.brandText,
     fontWeight: "bold",
   },
   counterText: {
     fontSize: 12,
-    color: "#777",
+    color: colors.textMuted,
     marginBottom: 8,
     fontWeight: "500",
   },
@@ -330,26 +334,26 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 13,
-    color: "#666",
+    color: colors.textSecondary,
     marginTop: 8,
   },
   emptyTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
+    color: colors.textPrimary,
   },
   emptySubtitle: {
     fontSize: 13,
-    color: "#888",
+    color: colors.textMuted,
     textAlign: "center",
     paddingHorizontal: 20,
   },
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.surface,
     padding: 14,
-    borderRadius: 12,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: colors.border,
     gap: 6,
   },
   cardTopRow: {
@@ -358,37 +362,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   badgeNumero: {
-    backgroundColor: "rgba(39, 174, 96, 0.15)",
+    backgroundColor: colors.brandSoft,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: radius.sm,
   },
   badgeNumeroText: {
-    color: "#27ae60",
+    color: colors.brand,
     fontSize: 15,
     fontWeight: "bold",
   },
   badgeAgencia: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: colors.background,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: radius.sm,
   },
   badgeAgenciaText: {
-    color: "#666",
+    color: colors.textSecondary,
     fontSize: 11,
     fontWeight: "600",
   },
   routeFullName: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#222",
+    color: colors.textPrimary,
   },
   routeDetails: {
     marginTop: 4,
     paddingTop: 6,
     borderTopWidth: 1,
-    borderTopColor: "#f5f5f5",
+    borderTopColor: colors.border,
     gap: 4,
   },
   detailRow: {
@@ -399,11 +403,11 @@ const styles = StyleSheet.create({
   detailLabel: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#555",
+    color: colors.textSecondary,
   },
   detailValue: {
     fontSize: 12,
-    color: "#333",
+    color: colors.textPrimary,
     flex: 1,
   },
 });

@@ -5,6 +5,7 @@ import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/themed-text';
 import { BusMap } from '@/components/BusMap';
+import { LineSearch } from '@/components/LineSearch';
 import { useFavorites } from '@/hooks/useFavorites';
 import { BusTheme } from '@/constants/theme';
 
@@ -35,9 +36,11 @@ export default function HomeScreen() {
 
       <View style={styles.phoneFrame}>
         <SafeAreaView style={styles.safeArea}>
+          {/* SECTION: header */}
           <View style={styles.header}>
             <ThemedText style={styles.headerTitle}>
               {abaAtiva === 'mapa' && 'Mapa & Paradas (Recife / Olinda)'}
+              {abaAtiva === 'pesquisa' && 'Pesquisar Linhas'}
               {abaAtiva === 'favoritos' && 'Linhas Favoritas'}
               {abaAtiva === 'perfil' && (usuarioLogado ? 'Perfil do Usuário' : 'Acessar Conta')}
             </ThemedText>
@@ -50,15 +53,22 @@ export default function HomeScreen() {
               <Ionicons
                 name="information-circle-outline"
                 size={24}
-                color="#27ae60"
+                color={colors.brand}
               />
             </TouchableOpacity>
           </View>
 
+          {/* Conteúdo principal conforme aba selecionada */}
           <View style={[styles.content, abaAtiva === 'mapa' && styles.contentMap]}>
             {abaAtiva === 'mapa' && (
               <View style={styles.tabContent}>
                 <BusMap />
+              </View>
+            )}
+
+            {abaAtiva === 'pesquisa' && (
+              <View style={styles.tabContent}>
+                <LineSearch />
               </View>
             )}
 
@@ -173,6 +183,7 @@ export default function HomeScreen() {
               ))}
           </View>
 
+          {/* SECTION: Barra de navegação inferior */}
           <View style={styles.bottomNav}>
             <TouchableOpacity
               style={[styles.navItem, abaAtiva === 'mapa' && styles.navItemActive]}
@@ -180,6 +191,16 @@ export default function HomeScreen() {
             >
               <Ionicons name="map" size={20} color={abaAtiva === 'mapa' ? colors.brand : colors.textMuted} />
               <ThemedText style={[styles.navText, abaAtiva === 'mapa' && styles.navTextActive]}>Mapa</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.navItem, abaAtiva === 'pesquisa' && styles.navItemActive]}
+              onPress={() => setAbaAtiva('pesquisa')}
+            >
+              <Ionicons name="search" size={20} color={abaAtiva === 'pesquisa' ? colors.brand : colors.textMuted} />
+              <ThemedText style={[styles.navText, abaAtiva === 'pesquisa' && styles.navTextActive]}>
+                Pesquisar
+              </ThemedText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -210,8 +231,17 @@ const styles = StyleSheet.create({
   externalContainer: { flex: 1, backgroundColor: '#1E293B', justifyContent: 'center', alignItems: 'center' },
   phoneFrame: { width: '100%', maxWidth: 420, height: '100%', maxHeight: 850, backgroundColor: colors.background, overflow: 'hidden' },
   safeArea: { flex: 1 },
-  header: { padding: 16, backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
   headerTitle: { fontSize: 16, fontWeight: 'bold', color: colors.textPrimary },
+
   content: { flex: 1, padding: 16 },
   contentMap: { padding: 0 },
   tabContent: { flex: 1, width: '100%' },
@@ -316,7 +346,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
   },
-  navItem: { alignItems: 'center', justifyContent: 'center', flex: 1, gap: 2 },
+  navItem: { alignItems: 'center', justifyContent: 'center', flex: 1, height: '100%', gap: 2 },
   navItemActive: { borderTopWidth: 2, borderTopColor: colors.brand },
   navText: { fontSize: 11, color: colors.textMuted },
   navTextActive: { color: colors.brand, fontWeight: 'bold' },

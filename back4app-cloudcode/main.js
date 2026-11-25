@@ -333,3 +333,29 @@ Parse.Cloud.define("getItineraryForBus", async (request) => {
         throw new Parse.Error(500, `Erro ao processar itinerário da viagem (trip_id) ${tripId}: ` + error.message);
     }
 });
+
+// NOTE: retorna endereço para o stopId de uma parada
+Parse.Cloud.define("getAddressForStop", async (request) => {
+    const { stopId } = request.params; //recebemos o route_id pra depois puxar o trip_id
+
+    if (!stopId) {
+        throw new Parse.Error(400, "O parâmetro stopId é obrigatório.");
+    }
+
+    try {
+        const addressQuery = new Parse.Query("Addresses");
+        addressQuery.equalTo("stop_id", stopId);
+
+        const foundAddress = await addressQuery.first({ useMasterKey: true });
+
+        if (!foundAddress) {
+            return { address: null }
+        }
+
+        return {
+            address: foundAddress.get("address") || null
+        };
+    } catch (error) {
+        throw new Parse.Error(500, `Erro ao processar endereço da parada stopId #${stopId}: ` + error.message);
+    }
+});

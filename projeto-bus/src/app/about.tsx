@@ -7,9 +7,12 @@ import {
   Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { ThemedText } from "@/components/themed-text";
+import { BusTheme } from "@/constants/theme";
+
+const { colors, radius } = BusTheme;
 
 export default function AboutScreen() {
   const router = useRouter();
@@ -22,6 +25,8 @@ export default function AboutScreen() {
 
   return (
     <View style={styles.externalContainer}>
+      <Stack.Screen options={{ headerShown: false }} />
+
       <View style={styles.phoneFrame}>
         <SafeAreaView style={styles.safeArea}>
           {/* Cabeçalho com botão Voltar */}
@@ -30,7 +35,7 @@ export default function AboutScreen() {
               onPress={() => router.back()}
               style={styles.backButton}
             >
-              <Ionicons name="arrow-back" size={20} color="#27ae60" />
+              <Ionicons name="arrow-back" size={20} color={colors.brand} />
               <ThemedText style={styles.backText}>Voltar</ThemedText>
             </TouchableOpacity>
             <ThemedText style={styles.headerTitle}>Sobre e Ajuda</ThemedText>
@@ -40,14 +45,15 @@ export default function AboutScreen() {
           <ScrollView
             style={styles.content}
             contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
           >
             {/* Logo e Nome do App */}
             <View style={styles.appHeader}>
               <View style={styles.logoCircle}>
-                <Ionicons name="bus" size={40} color="#27ae60" />
+                <Ionicons name="bus" size={40} color={colors.brand} />
               </View>
               <ThemedText style={styles.appName}>
-                Monitor de Linhas de Ônibus
+                BusRecife
               </ThemedText>
               <ThemedText style={styles.appVersion}>
                 Versão 1.0.0 • UNICAP 2026.2
@@ -57,7 +63,7 @@ export default function AboutScreen() {
             {/* Card 1: Fonte dos Dados (Requisito do PDF) */}
             <View style={styles.card}>
               <View style={styles.cardHeader}>
-                <Ionicons name="server-outline" size={20} color="#27ae60" />
+                <Ionicons name="server-outline" size={20} color={colors.brand} />
                 <ThemedText style={styles.cardTitle}>
                   Fonte dos Dados
                 </ThemedText>
@@ -77,7 +83,7 @@ export default function AboutScreen() {
                 onPress={() => abrirLink("https://www.granderecife.pe.gov.br")}
                 activeOpacity={0.8}
               >
-                <Ionicons name="globe-outline" size={16} color="#ffffff" />
+                <Ionicons name="globe-outline" size={16} color={colors.brandText} />
                 <ThemedText style={styles.linkButtonText}>
                   Acessar Site do Grande Recife
                 </ThemedText>
@@ -90,7 +96,7 @@ export default function AboutScreen() {
                 <Ionicons
                   name="alert-circle-outline"
                   size={20}
-                  color="#e67e22"
+                  color={colors.brand}
                 />
                 <ThemedText style={styles.cardTitle}>
                   Reportar Problemas na Linha
@@ -105,9 +111,10 @@ export default function AboutScreen() {
               <TouchableOpacity
                 style={styles.contactRow}
                 onPress={() => abrirLink("tel:08000810158")}
+                activeOpacity={0.7}
               >
                 <View style={styles.contactIcon}>
-                  <Ionicons name="call" size={16} color="#27ae60" />
+                  <Ionicons name="call" size={16} color={colors.brand} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <ThemedText style={styles.contactLabel}>
@@ -123,14 +130,10 @@ export default function AboutScreen() {
               <TouchableOpacity
                 style={styles.contactRow}
                 onPress={() => abrirLink("https://wa.me/5581994883999")}
+                activeOpacity={0.7}
               >
-                <View
-                  style={[
-                    styles.contactIcon,
-                    { backgroundColor: "rgba(37, 211, 102, 0.15)" },
-                  ]}
-                >
-                  <Ionicons name="logo-whatsapp" size={16} color="#25D366" />
+                <View style={styles.contactIcon}>
+                  <Ionicons name="logo-whatsapp" size={16} color={colors.brand} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <ThemedText style={styles.contactLabel}>
@@ -146,7 +149,7 @@ export default function AboutScreen() {
             {/* Card 3: Informações Acadêmicas da Disciplina */}
             <View style={styles.card}>
               <View style={styles.cardHeader}>
-                <Ionicons name="school-outline" size={20} color="#2980b9" />
+                <Ionicons name="school-outline" size={20} color={colors.brand} />
                 <ThemedText style={styles.cardTitle}>
                   Projeto Acadêmico
                 </ThemedText>
@@ -178,18 +181,16 @@ export default function AboutScreen() {
 const styles = StyleSheet.create({
   externalContainer: {
     flex: 1,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: "#1E293B",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 20,
   },
   phoneFrame: {
     width: "100%",
     maxWidth: 420,
     height: "100%",
     maxHeight: 850,
-    backgroundColor: "#f8f9fa",
-    borderRadius: 24,
+    backgroundColor: colors.background,
     overflow: "hidden",
   },
   safeArea: { flex: 1 },
@@ -198,74 +199,75 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     padding: 16,
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: colors.border,
   },
-  headerTitle: { fontSize: 16, fontWeight: "bold", color: "#111" },
+  headerTitle: { fontSize: 16, fontWeight: "bold", color: colors.textPrimary },
   backButton: { flexDirection: "row", alignItems: "center", gap: 4 },
-  backText: { color: "#27ae60", fontSize: 14, fontWeight: "600" },
+  backText: { color: colors.brand, fontSize: 14, fontWeight: "600" },
   content: { flex: 1 },
   scrollContent: { padding: 16, gap: 14, paddingBottom: 30 },
   appHeader: { alignItems: "center", paddingVertical: 8, gap: 4 },
   logoCircle: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: "rgba(39, 174, 96, 0.12)",
+    width: 72,
+    height: 72,
+    borderRadius: radius.full,
+    backgroundColor: colors.brandSoft,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 4,
   },
-  appName: { fontSize: 18, fontWeight: "bold", color: "#111" },
-  appVersion: { fontSize: 12, color: "#777" },
+  appName: { fontSize: 22, fontWeight: "bold", color: colors.textPrimary },
+  appVersion: { fontSize: 12, color: colors.textMuted },
   card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 14,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: colors.border,
     gap: 10,
-    elevation: 1,
   },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "#f5f5f5",
+    borderBottomColor: colors.border,
     paddingBottom: 8,
   },
-  cardTitle: { fontSize: 15, fontWeight: "bold", color: "#222" },
-  cardText: { fontSize: 13, color: "#555", lineHeight: 18 },
-  bold: { fontWeight: "bold", color: "#222" },
+  cardTitle: { fontSize: 15, fontWeight: "bold", color: colors.textPrimary },
+  cardText: { fontSize: 13, color: colors.textSecondary, lineHeight: 18 },
+  bold: { fontWeight: "bold", color: colors.textPrimary },
   linkButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "#27ae60",
-    paddingVertical: 10,
-    borderRadius: 10,
+    backgroundColor: colors.brand,
+    paddingVertical: 11,
+    borderRadius: radius.md,
     marginTop: 4,
   },
-  linkButtonText: { color: "#ffffff", fontSize: 13, fontWeight: "bold" },
+  linkButtonText: { color: colors.brandText, fontSize: 13, fontWeight: "bold" },
   contactRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: colors.background,
     padding: 10,
-    borderRadius: 10,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   contactIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "rgba(39, 174, 96, 0.12)",
+    width: 34,
+    height: 34,
+    borderRadius: radius.full,
+    backgroundColor: colors.brandSoft,
     justifyContent: "center",
     alignItems: "center",
   },
-  contactLabel: { fontSize: 11, color: "#777" },
-  contactValue: { fontSize: 13, fontWeight: "600", color: "#222" },
+  contactLabel: { fontSize: 11, color: colors.textMuted },
+  contactValue: { fontSize: 13, fontWeight: "600", color: colors.textPrimary },
 });

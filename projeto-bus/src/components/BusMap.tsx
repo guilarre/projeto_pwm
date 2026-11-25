@@ -5,8 +5,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BACK4APP_CONFIG } from '@/config/back4app';
 
-// limite mínimo de 1km em graus de latitude (1000m / 111111m =~ 0.009)
-const MAX_LATITUDE_DELTA = 0.009;
+// limite mínimo de 1km em graus de latitude (2000m / 111111m =~ 0.018)
+const MAX_LATITUDE_DELTA = 0.018;
 
 interface Stop {
     objectId: string;

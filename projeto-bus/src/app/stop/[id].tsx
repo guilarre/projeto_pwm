@@ -47,7 +47,7 @@ export default function BusStopScreen() {
           const finalAddress = parts.slice(0, 3).join(',').trim();
           setStopAddress(finalAddress);
         } else {
-          setStopAddress(`Parada #${stopId}`);
+          setStopAddress('');
         }
 
         const busesResponse = await fetch(`${BACK4APP_CONFIG.baseUrl}/functions/getBusesForStop`, {
