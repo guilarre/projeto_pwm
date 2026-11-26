@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, ActivityIndicator, FlatList, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BACK4APP_CONFIG } from '@/config/back4app';
 import { BusTheme } from '@/constants/theme';
+import { SharedStyles } from '@/styles/shared';
 import ClockIcon from '../../../assets/figma.icons/clock-icon.svg';
 
 const { colors, radius } = BusTheme;
@@ -77,98 +79,92 @@ export default function BusStopScreen() {
   }, [stopId]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.topBar}>
-        <Pressable
-          style={({ pressed }) => [styles.backButton, pressed && { opacity: 0.8 }]}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-        </Pressable>
-      </View>
-
-      <View style={styles.header}>
-        <Text style={styles.title}>Parada {stopId}</Text>
-        <Text style={styles.subtitle} numberOfLines={2}>
-          {stopAddress}
-        </Text>
-      </View>
-
-      <Text style={styles.sectionTitle}>Próximas chegadas (próximas 2h):</Text>
-
-      {loading ? (
-        <ActivityIndicator size="large" color={colors.brand} style={{ marginTop: 40 }} />
-      ) : buses.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Nenhum ônibus programado para este horário.</Text>
+    <SafeAreaView style={styles.safeContainer} edges={['top', 'bottom']}>
+      <View style={styles.container}>
+        <View style={styles.topBar}>
+          <Pressable
+            style={({ pressed }) => [SharedStyles.floatingBackButton, pressed && { opacity: 0.8 }]}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          </Pressable>
         </View>
-      ) : (
-        <FlatList
-          data={buses}
-          keyExtractor={(item) => item.objectId}
-          contentContainerStyle={styles.listContainer}
-          renderItem={({ item }) => (
-            <Pressable
-              style={({ pressed }) => [
-                styles.busCard,
-                pressed && styles.busCardPressed,
-              ]}
-              onPress={() => {
-                router.push({
-                  pathname: `/route/${item.route_id}` as any,
-                  params: {
-                    longName: item.route_long_name,
-                    headsign: item.trip_headsign || '',
-                    tripId: item.trip_id,
-                  },
-                });
-              }}
-            >
-              <View style={styles.busInfoLeft}>
-                <Text style={styles.busNumber}>{item.route_id}</Text>
-                <Text style={styles.busTime}>
-                  <ClockIcon width={10} height={10} fill="#fff" />
-                  {' '}{item.arrival_time ? item.arrival_time.substring(0, 5) : '--:--'}
+
+        <View style={styles.header}>
+          <Text style={styles.title}>Parada {stopId}</Text>
+          <Text style={styles.subtitle} numberOfLines={2}>
+            {stopAddress}
+          </Text>
+        </View>
+
+        <Text style={styles.sectionTitle}>Próximas chegadas (próximas 2h):</Text>
+
+        {loading ? (
+          <ActivityIndicator size="large" color={colors.brand} style={{ marginTop: 40 }} />
+        ) : buses.length === 0 ? (
+          <View style={SharedStyles.emptyContainer}>
+            <Text style={SharedStyles.emptyText}>Nenhum ônibus programado para este horário.</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={buses}
+            keyExtractor={(item) => item.objectId}
+            contentContainerStyle={styles.listContainer}
+            renderItem={({ item }) => (
+              <Pressable
+                style={({ pressed }) => [
+                  SharedStyles.card,
+                  styles.busCardRow,
+                  pressed && SharedStyles.cardPressed,
+                ]}
+                onPress={() => {
+                  router.push({
+                    pathname: `/route/${item.route_id}` as any,
+                    params: {
+                      longName: item.route_long_name,
+                      headsign: item.trip_headsign || '',
+                      tripId: item.trip_id,
+                    },
+                  });
+                }}
+              >
+                <View style={styles.busInfoLeft}>
+                  <Text style={styles.busNumber}>{item.route_id}</Text>
+                  <Text style={styles.busTime}>
+                    <ClockIcon width={10} height={10} fill="#fff" />
+                    {' '}{item.arrival_time ? item.arrival_time.substring(0, 5) : '--:--'}
+                  </Text>
+                </View>
+                <Text style={styles.busName} numberOfLines={2}>
+                  {item.route_long_name}
+                  {item.trip_headsign !== undefined && item.trip_headsign !== null && (
+                    <Text style={styles.tripHeadsignText}> ({item.trip_headsign})</Text>
+                  )}
                 </Text>
-              </View>
-              <Text style={styles.busName} numberOfLines={2}>
-                {item.route_long_name}
-                {item.trip_headsign !== undefined && item.trip_headsign !== null && (
-                  <Text style={styles.tripHeadsignText}> ({item.trip_headsign})</Text>
-                )}
-              </Text>
-            </Pressable>
-          )}
-        />
-      )}
-    </View>
+              </Pressable>
+            )}
+          />
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,
     paddingHorizontal: 16,
-    paddingTop: 48,
+    paddingTop: 12,
   },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
   },
   header: {
     backgroundColor: colors.brand,
@@ -201,23 +197,12 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 20,
+    gap: 10,
   },
-  busCard: {
-    backgroundColor: colors.surface,
-    padding: 14,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 10,
+  busCardRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.03,
-    shadowRadius: 2,
-  },
-  busCardPressed: {
-    backgroundColor: colors.brandSoft,
+    gap: 0,
   },
   busInfoLeft: {
     marginRight: 16,
@@ -244,14 +229,6 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontWeight: '600',
   },
-  emptyContainer: {
-    marginTop: 40,
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: colors.textMuted,
-    fontSize: 14,
-  },
 });
+
+

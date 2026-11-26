@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -12,19 +12,23 @@ import {
   Dimensions,
 } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BACK4APP_CONFIG } from '@/config/back4app';
 import { useFavorites } from '@/hooks/useFavorites';
 import { BusTheme } from '@/constants/theme';
+import { SharedStyles } from '@/styles/shared';
 
 const { colors, radius } = BusTheme;
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Alturas do painel inferior (expandido vs recolhido)
-const SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.62;
-const SHEET_MIN_HEIGHT = 150;
+const SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.65;
+const SHEET_MIN_HEIGHT = 160;
 const MAX_TRANSLATE_Y = SHEET_MAX_HEIGHT - SHEET_MIN_HEIGHT;
+
+type DayType = 'DUT' | 'SAB' | 'DOM';
 
 interface StopLocation {
   latitude: number;
@@ -43,6 +47,58 @@ interface ShapePoint {
   longitude: number;
 }
 
+interface TripRecord {
+  trip_id: string;
+  service_id?: string;
+  direction_id?: string;
+  trip_headsign?: string;
+}
+
+interface ScheduleSummary {
+  primeira: string;
+  ultima: string;
+  intervaloMedio: string;
+  totalViagens: number;
+}
+
+// Identifica o tipo de dia atual em Recife (UTC-3)
+function getRecifeDayType(): DayType {
+  const now = new Date();
+  const recifeTime = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  const dayOfWeek = recifeTime.getUTCDay();
+  if (dayOfWeek === 0) return 'DOM';
+  if (dayOfWeek === 6) return 'SAB';
+  return 'DUT';
+}
+
+// Formata minutos totais (ex: 1455 -> "00:15")
+function formatMinutes(totalMinutes: number): string {
+  const hh = Math.floor(totalMinutes / 60) % 24;
+  const mm = totalMinutes % 60;
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+}
+
+// Extrai partida em minutos a partir de trip_id no formato "030-PRI-VOLTA-0400-0515-DOM-1666"
+function parseTripMetadata(tripId: string) {
+  const parts = tripId.split('-');
+  if (parts.length < 6) return null;
+
+  const direction = parts[2]; // IDA | VOLTA
+  const departureStr = parts[3]; // HHMM
+  const dayType = parts[5] as DayType; // DUT | SAB | DOM
+
+  if (!/^\d{4}$/.test(departureStr)) return null;
+  const hh = Number(departureStr.slice(0, 2));
+  const mm = Number(departureStr.slice(2, 4));
+  if (Number.isNaN(hh) || Number.isNaN(mm)) return null;
+
+  return {
+    direction,
+    dayType,
+    departureMinutes: hh * 60 + mm,
+  };
+}
+
 export default function BusDetailScreen() {
   const { id, longName, headsign, tripId } = useLocalSearchParams<{
     id: string;
@@ -52,6 +108,7 @@ export default function BusDetailScreen() {
   }>();
 
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorited = isFavorite(String(id));
 
@@ -64,6 +121,11 @@ export default function BusDetailScreen() {
   const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Estado dos horários da linha (Primeira viagem, Última viagem e Intervalo médio)
+  const [routeTrips, setRouteTrips] = useState<TripRecord[]>([]);
+  const [loadingSchedules, setLoadingSchedules] = useState(true);
+  const [selectedDay, setSelectedDay] = useState<DayType>(getRecifeDayType);
+
   const stopsRef = useRef<ItineraryStop[]>([]);
   const shapesRef = useRef<ShapePoint[]>([]);
 
@@ -74,7 +136,7 @@ export default function BusDetailScreen() {
   const fitRouteToMap = (
     isSheetOpen: boolean,
     currentShapes: ShapePoint[] = shapesRef.current,
-    currentStops: ItineraryStop[] = stopsRef.current
+    currentStops: ItineraryStop[] = stopsRef.current,
   ) => {
     if (!mapRef.current) return;
 
@@ -138,9 +200,10 @@ export default function BusDetailScreen() {
           animateSheetTo(0);
         }
       },
-    })
+    }),
   ).current;
 
+  // Busca itinerário (paradas + traçado) da viagem atual
   useEffect(() => {
     if (!tripId) {
       setLoading(false);
@@ -187,6 +250,90 @@ export default function BusDetailScreen() {
 
     fetchItinerary();
   }, [tripId]);
+
+  // Busca todas as viagens da linha para calcular primeira, última e intervalo médio
+  useEffect(() => {
+    if (!id) {
+      setLoadingSchedules(false);
+      return;
+    }
+
+    async function fetchRouteTrips() {
+      setLoadingSchedules(true);
+      try {
+        const whereQuery = { route_id: String(id) };
+        const res = await fetch(
+          `${BACK4APP_CONFIG.baseUrl}/classes/Trips?where=${encodeURIComponent(
+            JSON.stringify(whereQuery),
+          )}&limit=1000`,
+          {
+            headers: {
+              'X-Parse-Application-Id': BACK4APP_CONFIG.appId,
+              'X-Parse-REST-API-Key': BACK4APP_CONFIG.restKey,
+            },
+          },
+        );
+        const data = await res.json();
+        if (data.results) {
+          setRouteTrips(data.results);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar horários da linha:', error);
+      } finally {
+        setLoadingSchedules(false);
+      }
+    }
+
+    fetchRouteTrips();
+  }, [id]);
+
+  // Sentido da viagem atual ("IDA" ou "VOLTA") para não misturar intervalos dos dois sentidos
+  const activeDirection = useMemo(() => {
+    if (tripId) {
+      const parsed = parseTripMetadata(String(tripId));
+      if (parsed?.direction) return parsed.direction;
+    }
+    return 'IDA';
+  }, [tripId]);
+
+  // Calcula primeira viagem, última viagem e intervalo médio para o dia selecionado
+  const scheduleSummary: ScheduleSummary | null = useMemo(() => {
+    if (routeTrips.length === 0) return null;
+
+    const parsedTrips = routeTrips
+      .map((t) => parseTripMetadata(t.trip_id))
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+
+    // Filtra pelo tipo de dia escolhido e sentido da viagem atual
+    let matching = parsedTrips.filter(
+      (t) => t.dayType === selectedDay && t.direction === activeDirection,
+    );
+
+    // Fallback caso a linha só tenha viagens em um sentido ou outro
+    if (matching.length === 0) {
+      matching = parsedTrips.filter((t) => t.dayType === selectedDay);
+    }
+
+    if (matching.length === 0) return null;
+
+    const uniqueMinutes = Array.from(new Set(matching.map((t) => t.departureMinutes))).sort(
+      (a, b) => a - b,
+    );
+
+    const first = uniqueMinutes[0];
+    const last = uniqueMinutes[uniqueMinutes.length - 1];
+    const avgInterval =
+      uniqueMinutes.length > 1
+        ? Math.round((last - first) / (uniqueMinutes.length - 1))
+        : 0;
+
+    return {
+      primeira: formatMinutes(first),
+      ultima: formatMinutes(last),
+      intervaloMedio: uniqueMinutes.length > 1 ? `~${avgInterval} min` : 'Viagem única',
+      totalViagens: uniqueMinutes.length,
+    };
+  }, [routeTrips, selectedDay, activeDirection]);
 
   const formatShortAddress = (rawAddress: string) => {
     if (!rawAddress) return 'Endereço não mapeado';
@@ -266,9 +413,14 @@ export default function BusDetailScreen() {
         })}
       </MapView>
 
-      {/* Botão flutuante de Voltar */}
+      {/* Botão flutuante de Voltar respeitando a altura da barra de status */}
       <Pressable
-        style={({ pressed }) => [styles.backButton, pressed && { opacity: 0.8 }]}
+        style={({ pressed }) => [
+          SharedStyles.floatingBackButton,
+          styles.backButtonPosition,
+          { top: insets.top + 12 },
+          pressed && { opacity: 0.8 },
+        ]}
         onPress={() => router.back()}
       >
         <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
@@ -278,6 +430,7 @@ export default function BusDetailScreen() {
       <Animated.View
         style={[
           styles.sheetContainer,
+          { paddingBottom: insets.bottom },
           { transform: [{ translateY }] },
         ]}
       >
@@ -289,12 +442,12 @@ export default function BusDetailScreen() {
           {/* Cabeçalho da linha com botão de Favoritar */}
           <View style={styles.routeHeader}>
             <View style={styles.badgeRow}>
-              <View style={styles.routeBadge}>
+              <View style={SharedStyles.routeBadge}>
                 <Text style={styles.routeBadgeText}>{id}</Text>
               </View>
               {headsign ? (
                 <Text style={styles.headsignText} numberOfLines={1}>
-                  Sentido: {headsign}
+                  Sentido: {headsign} ({activeDirection})
                 </Text>
               ) : (
                 <View style={{ flex: 1 }} />
@@ -328,15 +481,74 @@ export default function BusDetailScreen() {
           </View>
         </View>
 
+        {/* Bloco de Horários de Saída: Primeira, Última e Intervalo Médio */}
+        <View style={styles.scheduleCard}>
+          <View style={styles.scheduleHeader}>
+            <View style={styles.scheduleTitleRow}>
+              <Ionicons name="time-outline" size={16} color={colors.brand} />
+              <Text style={styles.scheduleTitle}>Horários de Saída</Text>
+            </View>
+            <View style={styles.dayTabs}>
+              {(
+                [
+                  { key: 'DUT', label: 'Úteis' },
+                  { key: 'SAB', label: 'Sáb' },
+                  { key: 'DOM', label: 'Dom' },
+                ] as const
+              ).map((dia) => {
+                const ativo = selectedDay === dia.key;
+                return (
+                  <Pressable
+                    key={dia.key}
+                    style={[styles.dayTab, ativo && styles.dayTabActive]}
+                    onPress={() => setSelectedDay(dia.key)}
+                  >
+                    <Text style={[styles.dayTabText, ativo && styles.dayTabTextActive]}>
+                      {dia.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+
+          {loadingSchedules ? (
+            <ActivityIndicator size="small" color={colors.brand} style={{ paddingVertical: 8 }} />
+          ) : scheduleSummary ? (
+            <View style={styles.scheduleStatsRow}>
+              <View style={styles.scheduleStatBox}>
+                <Text style={styles.scheduleStatLabel}>Primeira viagem</Text>
+                <Text style={styles.scheduleStatValue}>{scheduleSummary.primeira}</Text>
+              </View>
+              <View style={styles.scheduleDivider} />
+              <View style={styles.scheduleStatBox}>
+                <Text style={styles.scheduleStatLabel}>Última viagem</Text>
+                <Text style={styles.scheduleStatValue}>{scheduleSummary.ultima}</Text>
+              </View>
+              <View style={styles.scheduleDivider} />
+              <View style={styles.scheduleStatBox}>
+                <Text style={styles.scheduleStatLabel}>Intervalo médio</Text>
+                <Text style={[styles.scheduleStatValue, { color: colors.brand }]}>
+                  {scheduleSummary.intervaloMedio}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <Text style={styles.scheduleEmptyText}>
+              Sem viagens programadas para este dia.
+            </Text>
+          )}
+        </View>
+
         <Text style={styles.sectionTitle}>
           Itinerário ({stops.length} paradas)
         </Text>
 
         {loading ? (
-          <ActivityIndicator size="large" color={colors.brand} style={{ marginTop: 32 }} />
+          <ActivityIndicator size="large" color={colors.brand} style={{ marginTop: 24 }} />
         ) : stops.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
+          <View style={SharedStyles.emptyContainer}>
+            <Text style={SharedStyles.emptyText}>
               Nenhuma parada encontrada para esta viagem.
             </Text>
           </View>
@@ -419,21 +631,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surface,
   },
-  backButton: {
+  backButtonPosition: {
     position: 'absolute',
-    top: 48,
     left: 16,
-    width: 44,
-    height: 44,
-    borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
   },
   sheetContainer: {
     position: 'absolute',
@@ -462,22 +662,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   routeHeader: {
-    marginBottom: 14,
+    marginBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderSubtle,
-    paddingBottom: 12,
+    paddingBottom: 10,
   },
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 6,
     gap: 10,
-  },
-  routeBadge: {
-    backgroundColor: colors.brand,
-    paddingHorizontal: 14,
-    paddingVertical: 4,
-    borderRadius: radius.full,
   },
   routeBadgeText: {
     color: colors.brandText,
@@ -502,12 +696,90 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEF9C3',
   },
   routeTitle: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
+  scheduleCard: {
+    backgroundColor: colors.background,
+    borderRadius: radius.md,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 12,
+    gap: 8,
+  },
+  scheduleHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  scheduleTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  scheduleTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  dayTabs: {
+    flexDirection: 'row',
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radius.full,
+    padding: 2,
+    gap: 2,
+  },
+  dayTab: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.full,
+  },
+  dayTabActive: {
+    backgroundColor: colors.brand,
+  },
+  dayTabText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  dayTabTextActive: {
+    color: colors.brandText,
+    fontWeight: 'bold',
+  },
+  scheduleStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  scheduleStatBox: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  scheduleStatLabel: {
+    fontSize: 11,
+    color: colors.textMuted,
+  },
+  scheduleStatValue: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  scheduleDivider: {
+    width: 1,
+    height: 26,
+    backgroundColor: colors.border,
+  },
+  scheduleEmptyText: {
+    fontSize: 12,
+    color: colors.textMuted,
+    textAlign: 'center',
+    paddingVertical: 4,
+  },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: colors.textPrimary,
     marginBottom: 8,
@@ -571,12 +843,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textMuted,
   },
-  emptyContainer: {
-    marginTop: 32,
-    alignItems: 'center',
-  },
-  emptyText: {
-    color: colors.textMuted,
-    fontSize: 14,
-  },
 });
+
+

@@ -11,10 +11,7 @@ export interface FavoriteRoute {
 const STORAGE_KEY = '@busmap:favorites';
 
 // Estado inicial compartilhado entre as telas
-let globalFavorites: FavoriteRoute[] = [
-  { routeId: '030', nome: 'Ti Rio Doce / Barra De Jangada', headsign: 'Principal', tripId: '030-PRI-VOLTA-0400-0515-DOM-1666' },
-  { routeId: '2920', nome: 'Ti Rio Doce / Ti Cdu', headsign: 'Principal', tripId: '2920-PRI-VOLTA-0350-0435-DOM-30225' },
-];
+let globalFavorites: FavoriteRoute[] = [];
 let isLoaded = false;
 
 type Listener = (items: FavoriteRoute[]) => void;

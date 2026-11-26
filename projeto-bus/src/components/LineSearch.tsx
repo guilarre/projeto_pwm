@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   StyleSheet,
   View,
@@ -13,6 +13,7 @@ import { ThemedText } from "@/components/themed-text";
 import { BACK4APP_CONFIG } from "@/config/back4app";
 import { BusSearchBar } from "@/components/BusSearchBar";
 import { BusTheme } from "@/constants/theme";
+import { SharedStyles } from "@/styles/shared";
 
 const { colors, radius } = BusTheme;
 
@@ -24,27 +25,49 @@ interface BusRoute {
   agency_id?: string;
 }
 
-// Bairros rápidos para filtro de origem/destino com 1 toque
-const BAIRROS_RAPIDOS = [
-  "Todos",
-  "Rio Doce",
-  "Barro",
-  "Macaxeira",
-  "Janga",
-  "Boa Viagem",
-  "Olinda",
-  "Cdu",
-];
+type FiltroDirecao = "todos" | "origem" | "destino";
+
+// Remove acentos e normaliza para facilitar busca e comparação de bairros
+function normalizarTexto(texto: string) {
+  return texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// Limpa observações entre parênteses como "(Várzea)" ou "(Circular)" para extrair o nome do bairro/terminal
+function limparBairro(parte: string) {
+  return parte.replace(/\([^)]*\)/g, "").trim();
+}
+
+// Quebra o nome da linha em Origem e Destino final
+function separarOrigemDestino(nomeLinha: string) {
+  if (!nomeLinha) return { origem: "Recife", destino: "Recife" };
+  const partes = nomeLinha.split("/");
+  if (partes.length >= 2) {
+    return {
+      origem: partes[0].trim(),
+      destino: partes[partes.length - 1].trim(),
+    };
+  }
+  const ehCircular = normalizarTexto(nomeLinha).includes("circular");
+  return {
+    origem: nomeLinha.trim(),
+    destino: ehCircular ? "Circular (mesmo terminal)" : nomeLinha.trim(),
+  };
+}
 
 export function LineSearch() {
   const router = useRouter();
   const [linhas, setLinhas] = useState<BusRoute[]>([]);
   const [busca, setBusca] = useState("");
   const [bairroSelecionado, setBairroSelecionado] = useState("Todos");
+  const [filtroDirecao, setFiltroDirecao] = useState<FiltroDirecao>("todos");
   const [loading, setLoading] = useState(true);
   const [openingRouteId, setOpeningRouteId] = useState<string | null>(null);
 
-  // 1. Busca TODAS as linhas cadastradas no Back4App (limite máximo de 1000)
+  // 1. Busca TODAS as linhas cadastradas no Back4App
   useEffect(() => {
     async function carregarLinhas() {
       setLoading(true);
@@ -72,6 +95,39 @@ export function LineSearch() {
     carregarLinhas();
   }, []);
 
+  // Gera chips dinamicamente a partir das origens/destinos reais carregados do banco
+  const bairrosDisponiveis = useMemo(() => {
+    const mapaBairros = new Map<string, string>();
+
+    linhas.forEach((linha) => {
+      const { origem, destino } = separarOrigemDestino(linha.route_long_name);
+      const candidatos =
+        filtroDirecao === "origem"
+          ? [origem]
+          : filtroDirecao === "destino"
+            ? [destino]
+            : [origem, destino];
+
+      candidatos.forEach((cand) => {
+        const limpo = limparBairro(cand);
+        if (!limpo || limpo.startsWith("Circular")) return;
+        const chave = normalizarTexto(limpo);
+        if (!mapaBairros.has(chave)) {
+          mapaBairros.set(chave, limpo);
+        }
+      });
+    });
+
+    return ["Todos", ...Array.from(mapaBairros.values()).sort((a, b) => a.localeCompare(b))];
+  }, [linhas, filtroDirecao]);
+
+  // Se trocar de modo (ex: Origem -> Destino) e o bairro atual não existir nesse modo, volta para "Todos"
+  useEffect(() => {
+    if (bairroSelecionado !== "Todos" && !bairrosDisponiveis.includes(bairroSelecionado)) {
+      setBairroSelecionado("Todos");
+    }
+  }, [bairrosDisponiveis, bairroSelecionado]);
+
   // Ao clicar na linha, busca uma viagem (tripId) e abre a tela de itinerário/detalhes
   const handleSelectRoute = async (item: BusRoute) => {
     setOpeningRouteId(item.route_id);
@@ -79,14 +135,14 @@ export function LineSearch() {
       const whereQuery = { route_id: item.route_id };
       const res = await fetch(
         `${BACK4APP_CONFIG.baseUrl}/classes/Trips?where=${encodeURIComponent(
-          JSON.stringify(whereQuery)
+          JSON.stringify(whereQuery),
         )}&limit=1`,
         {
           headers: {
             "X-Parse-Application-Id": BACK4APP_CONFIG.appId,
             "X-Parse-REST-API-Key": BACK4APP_CONFIG.restKey,
           },
-        }
+        },
       );
       const data = await res.json();
       const trip = data.results?.[0];
@@ -114,92 +170,125 @@ export function LineSearch() {
     }
   };
 
-  // 2. Filtro em tempo real combinando: Número, Nome e Bairros (Origem/Destino)
-  const linhasFiltradas = linhas.filter((item) => {
-    const termo = busca.toLowerCase().trim();
-    const nomeCompleto = (item.route_long_name || "").toLowerCase();
-    const numero = (item.route_short_name || "").toLowerCase();
+  // 2. Filtro combinado: Busca por número/nome + Bairro (Todos / Origem / Destino)
+  const linhasFiltradas = useMemo(() => {
+    const termo = normalizarTexto(busca);
+    const bairroNorm = normalizarTexto(bairroSelecionado);
 
-    // Pesquisa por número ou nome
-    const bateBuscaTexto =
-      termo === "" || nomeCompleto.includes(termo) || numero.includes(termo);
+    return linhas.filter((item) => {
+      const nomeCompleto = normalizarTexto(item.route_long_name || "");
+      const numero = normalizarTexto(item.route_short_name || "");
+      const { origem, destino } = separarOrigemDestino(item.route_long_name);
+      const origemNorm = normalizarTexto(origem);
+      const destinoNorm = normalizarTexto(destino);
 
-    // Filtro por bairro selecionado nos chips
-    const bateChipBairro =
-      bairroSelecionado === "Todos" ||
-      nomeCompleto.includes(bairroSelecionado.toLowerCase());
+      // Se o usuário escolheu "Origem" ou "Destino", a busca textual também pode combinar com ambos
+      const bateBuscaTexto =
+        termo === "" || nomeCompleto.includes(termo) || numero.includes(termo);
 
-    return bateBuscaTexto && bateChipBairro;
-  });
+      let bateChipBairro = true;
+      if (bairroSelecionado !== "Todos") {
+        if (filtroDirecao === "origem") {
+          bateChipBairro = origemNorm.includes(bairroNorm);
+        } else if (filtroDirecao === "destino") {
+          bateChipBairro = destinoNorm.includes(bairroNorm);
+        } else {
+          bateChipBairro =
+            origemNorm.includes(bairroNorm) ||
+            destinoNorm.includes(bairroNorm) ||
+            nomeCompleto.includes(bairroNorm);
+        }
+      }
 
-  // Quebra a string do nome em Origem e Destino
-  const separarOrigemDestino = (nomeLinha: string) => {
-    if (!nomeLinha) return { origem: "Recife", destino: "Recife" };
-    const partes = nomeLinha.split("/");
-    if (partes.length >= 2) {
-      return {
-        origem: partes[0].trim(),
-        destino: partes[1].trim(),
-      };
-    }
-    return {
-      origem: nomeLinha.trim(),
-      destino: "Circular / Retorno",
-    };
+      return bateBuscaTexto && bateChipBairro;
+    });
+  }, [linhas, busca, bairroSelecionado, filtroDirecao]);
+
+  const limparFiltros = () => {
+    setBusca("");
+    setBairroSelecionado("Todos");
+    setFiltroDirecao("todos");
   };
 
   return (
     <View style={styles.container}>
-      {/* Componente Modular de Pesquisa por Número ou Nome */}
+      {/* Campo de Busca por Número ou Nome */}
       <BusSearchBar
         value={busca}
-        onChangeText={(texto) => {
-          setBusca(texto);
-          if (bairroSelecionado !== "Todos") setBairroSelecionado("Todos");
-        }}
+        onChangeText={setBusca}
         onClear={() => setBusca("")}
-        placeholder="Buscar por número (ex: 030) ou nome do bus..."
+        placeholder="Buscar por número (ex: 030) ou nome da linha..."
       />
 
-      {/* Chips Rápidos de Filtragem por Bairro de Origem/Destino */}
-      <View style={{ maxHeight: 42, marginBottom: 12 }}>
+      {/* Seletor de escopo do filtro de bairro (Todos / Origem / Destino) */}
+      <View style={styles.filterScopeRow}>
+        <ThemedText style={styles.filterScopeLabel}>Filtrar por:</ThemedText>
+        <View style={styles.segmentedControl}>
+          {(
+            [
+              { key: "todos", label: "Origem/Destino" },
+              { key: "origem", label: "Origem" },
+              { key: "destino", label: "Destino" },
+            ] as const
+          ).map((opcao) => {
+            const ativo = filtroDirecao === opcao.key;
+            return (
+              <TouchableOpacity
+                key={opcao.key}
+                style={[styles.segmentBtn, ativo && styles.segmentBtnActive]}
+                onPress={() => setFiltroDirecao(opcao.key)}
+              >
+                <ThemedText
+                  style={[styles.segmentText, ativo && styles.segmentTextActive]}
+                >
+                  {opcao.label}
+                </ThemedText>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* Chips dinâmicos de Bairros/Terminais */}
+      <View style={{ maxHeight: 40, marginBottom: 10 }}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.chipsContainer}
         >
-          {BAIRROS_RAPIDOS.map((bairro) => (
-            <TouchableOpacity
-              key={bairro}
-              style={[
-                styles.chip,
-                bairroSelecionado === bairro && styles.chipActive,
-              ]}
-              onPress={() => {
-                setBairroSelecionado(bairro);
-                setBusca("");
-              }}
-            >
-              <ThemedText
-                style={[
-                  styles.chipText,
-                  bairroSelecionado === bairro && styles.chipTextActive,
-                ]}
+          {bairrosDisponiveis.map((bairro) => {
+            const ativo = bairroSelecionado === bairro;
+            return (
+              <TouchableOpacity
+                key={bairro}
+                style={[styles.chip, ativo && styles.chipActive]}
+                onPress={() => setBairroSelecionado(bairro)}
               >
-                {bairro}
-              </ThemedText>
-            </TouchableOpacity>
-          ))}
+                <ThemedText
+                  style={[styles.chipText, ativo && styles.chipTextActive]}
+                >
+                  {bairro}
+                </ThemedText>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
-      {/* Indicador da contagem de linhas */}
-      <ThemedText style={styles.counterText}>
-        {linhasFiltradas.length}{" "}
-        {linhasFiltradas.length === 1
-          ? "linha encontrada"
-          : "linhas encontradas"}
-      </ThemedText>
+      {/* Indicador da contagem de linhas + atalho para limpar */}
+      <View style={styles.counterRow}>
+        <ThemedText style={styles.counterText}>
+          {linhasFiltradas.length}{" "}
+          {linhasFiltradas.length === 1
+            ? "linha encontrada"
+            : "linhas encontradas"}
+        </ThemedText>
+        {(busca !== "" || bairroSelecionado !== "Todos" || filtroDirecao !== "todos") && (
+          <TouchableOpacity onPress={limparFiltros}>
+            <ThemedText style={styles.clearFiltersText}>Limpar filtros</ThemedText>
+          </TouchableOpacity>
+        )}
+      </View>
 
       {/* Listagem das Linhas */}
       {loading ? (
@@ -210,12 +299,12 @@ export function LineSearch() {
           </ThemedText>
         </View>
       ) : linhasFiltradas.length === 0 ? (
-        <View style={styles.centerBox}>
+        <View style={SharedStyles.emptyContainer}>
           <Ionicons name="bus-outline" size={48} color={colors.textMuted} />
           <ThemedText style={styles.emptyTitle}>
             Nenhuma linha encontrada
           </ThemedText>
-          <ThemedText style={styles.emptySubtitle}>
+          <ThemedText style={SharedStyles.emptyText}>
             Tente pesquisar por outro número, nome ou bairro.
           </ThemedText>
         </View>
@@ -226,16 +315,14 @@ export function LineSearch() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 24, gap: 10 }}
           renderItem={({ item }) => {
-            const { origem, destino } = separarOrigemDestino(
-              item.route_long_name,
-            );
+            const { origem, destino } = separarOrigemDestino(item.route_long_name);
             return (
               <TouchableOpacity
-                style={styles.card}
+                style={SharedStyles.card}
                 onPress={() => handleSelectRoute(item)}
                 activeOpacity={0.7}
               >
-                <View style={styles.cardTopRow}>
+                <View style={SharedStyles.cardTopRow}>
                   <View style={styles.badgeNumero}>
                     <ThemedText style={styles.badgeNumeroText}>
                       {item.route_short_name}
@@ -276,7 +363,7 @@ export function LineSearch() {
                   <View style={styles.detailRow}>
                     <Ionicons name="location" size={14} color={colors.danger} />
                     <ThemedText style={styles.detailLabel}>
-                      Destino:{" "}
+                      Destino final:{" "}
                     </ThemedText>
                     <ThemedText style={styles.detailValue} numberOfLines={1}>
                       {destino}
@@ -294,9 +381,46 @@ export function LineSearch() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  filterScopeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+    gap: 8,
+  },
+  filterScopeLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.textSecondary,
+  },
+  segmentedControl: {
+    flexDirection: "row",
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radius.full,
+    padding: 3,
+    gap: 2,
+  },
+  segmentBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.full,
+  },
+  segmentBtnActive: {
+    backgroundColor: colors.surface,
+  },
+  segmentText: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontWeight: "600",
+  },
+  segmentTextActive: {
+    color: colors.brand,
+    fontWeight: "bold",
+  },
   chipsContainer: {
     flexDirection: "row",
     gap: 8,
+    alignItems: "center",
   },
   chip: {
     paddingHorizontal: 14,
@@ -319,11 +443,21 @@ const styles = StyleSheet.create({
     color: colors.brandText,
     fontWeight: "bold",
   },
+  counterRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
   counterText: {
     fontSize: 12,
     color: colors.textMuted,
-    marginBottom: 8,
     fontWeight: "500",
+  },
+  clearFiltersText: {
+    fontSize: 12,
+    color: colors.brand,
+    fontWeight: "600",
   },
   centerBox: {
     flex: 1,
@@ -341,25 +475,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: colors.textPrimary,
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    color: colors.textMuted,
-    textAlign: "center",
-    paddingHorizontal: 20,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    padding: 14,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: 6,
-  },
-  cardTopRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
   },
   badgeNumero: {
     backgroundColor: colors.brandSoft,
@@ -389,8 +504,8 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   routeDetails: {
-    marginTop: 4,
-    paddingTop: 6,
+    marginTop: 2,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     gap: 4,
@@ -411,3 +526,5 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+
+
