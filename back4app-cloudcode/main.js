@@ -147,12 +147,28 @@ Parse.Cloud.define("getBusesForStop", async (request) => {
             return (parts[0] * 3600) + (parts[1] * 60) + (parts[2] || 0);
         }
 
-        // 2. Busca todos os stop_times daquela parada
+        // Função auxiliar para converter segundos em "HH:MM:SS"
+        function secondsToTimeStr(totalSec) {
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
+        }
+
+        const startTimeStr = secondsToTimeStr(windowStart);
+        const endTimeStr = secondsToTimeStr(windowEnd);
+
+        // 2. Busca apenas os stop_times da janela de 2h e do tipo de dia atual
         const stopTimesQuery = new Parse.Query("StopTimes");
         stopTimesQuery.equalTo("stop_id", stopId);
+        stopTimesQuery.greaterThanOrEqualTo("arrival_time", startTimeStr);
+        stopTimesQuery.lessThanOrEqualTo("arrival_time", endTimeStr);
+        stopTimesQuery.matches("trip_id", targetServiceType);
         stopTimesQuery.ascending("arrival_time");
         stopTimesQuery.limit(1000);
         const stopTimes = await stopTimesQuery.find({ useMasterKey: true });
+
+        if (stopTimes.length === 0) return [];
 
         if (stopTimes.length === 0) return [];
 
