@@ -3,6 +3,7 @@ todo.*
 test.*
 api_transitland.txt
 projeto-bus/.env
+.env
 
 # OS QUE VIERAM DO EXPO:
 
